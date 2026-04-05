@@ -1,0 +1,142 @@
+---
+title: "Paper trading"
+description: "Simulate AI-generated trade plans with real market data and no real money. Track positions, P&L, and performance across sessions."
+---
+
+Paper trading lets you execute trade plans against real NSE and BSE market data without risking real money. The engine records positions, tracks unrealized and realized P&L, and persists your history across sessions.
+
+## Enabling paper trading
+
+`TRADING_MODE=PAPER` is the default. Check your `.env` file:
+
+```bash
+TRADING_MODE=PAPER
+```
+
+You do not need to change anything to start paper trading — it is on by default.
+
+## Executing a paper trade after analysis
+
+<Steps>
+  <Step title="Run an analysis">
+    ```text
+    analyze RELIANCE
+    ```
+
+    Wait for the full output: analyst scorecard, debate, verdict, and the three trade plans.
+  </Step>
+
+  <Step title="Review the trade plans">
+    The analysis outputs three plans — aggressive, neutral, and conservative. Each plan shows:
+
+    - Entry price or range
+    - Stop-loss level
+    - Price target(s)
+    - Position size in shares (based on your `TOTAL_CAPITAL` and `DEFAULT_RISK_PCT`)
+    - Risk/reward ratio
+
+    Compare the plans and decide which risk profile fits your intent for this trade.
+  </Step>
+
+  <Step title="Execute a paper trade">
+    Run one of the following commands to execute the most recent trade plan:
+
+    ```text
+    execute
+    ```
+
+    This executes the neutral (balanced) plan. To execute a different profile:
+
+    ```text
+    execute aggressive
+    ```
+
+    ```text
+    execute conservative
+    ```
+
+    The paper trading engine fills the order immediately at the current last traded price plus a small simulated slippage (0.05%). The position is recorded and your simulated cash balance is updated.
+
+    **Product types and margin simulation:**
+
+    | Product | Margin required |
+    |---|---|
+    | CNC (delivery) | Full trade value |
+    | MIS (intraday) | 20% of trade value (5× leverage) |
+    | NRML (F&O) | 12% of notional value (~8× leverage) |
+  </Step>
+</Steps>
+
+## Tracking paper trades
+
+### View open positions
+
+```text
+positions
+```
+
+Shows all open paper positions with symbol, exchange, product type, quantity, average entry price, current last traded price, and unrealized P&L.
+
+### View performance statistics
+
+```text
+memory stats
+```
+
+Displays your overall trading history: win rate, total realized P&L, average win and loss size, and performance over time.
+
+### Record a trade outcome
+
+When a trade closes (either you manually exit or a stop-loss triggers), record the result so your statistics stay accurate:
+
+```text
+memory outcome ID WIN 1250
+```
+
+Replace `ID` with the trade record ID shown in `memory` output. Use `WIN` or `LOSS`, followed by the closing price. For example:
+
+```text
+memory outcome a3f2c1 WIN 2850
+```
+
+This links the outcome back to the original analysis and updates your win rate and P&L tracking.
+
+### View past analyses
+
+```text
+memory
+```
+
+Shows recent trade analyses stored in memory. To filter by symbol:
+
+```text
+memory RELIANCE
+```
+
+## Running strategy signals on paper
+
+To run a saved strategy and paper-trade its signal on a specific symbol:
+
+```text
+strategy run <name> RELIANCE --paper
+```
+
+If the strategy generates a BUY signal at the current price, the paper trading engine records the entry automatically. The `--paper` flag is required to prevent live execution.
+
+## Switching to live trading
+
+When you are confident in your setup and want to place real orders, change the trading mode in your `.env` file:
+
+```bash
+TRADING_MODE=LIVE
+```
+
+Restart the CLI after saving the change.
+
+<Warning>
+Setting `TRADING_MODE=LIVE` causes `execute` commands to place real orders with your connected broker. Real money will be at risk. Only make this change when you have thoroughly tested your workflow in paper mode and you are ready for live execution.
+</Warning>
+
+<Note>
+Paper trading P&L and trade history persist between sessions. Your positions and statistics are available every time you open the REPL.
+</Note>

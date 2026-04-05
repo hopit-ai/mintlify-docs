@@ -1,0 +1,52 @@
+---
+title: "Introduction"
+description: "India Trade CLI is a free, open-source terminal for trading Indian stocks and derivatives on NSE and BSE."
+---
+
+India Trade CLI is a free, open-source trading terminal for India's equity and derivatives markets. It runs seven AI analyst agents on any NSE or BSE listed stock — Technical, Fundamental, Options, News & Macro, Sentiment, Sector Rotation, and Risk Manager — forces them into a structured bull-vs-bear debate, and outputs a fund-manager-style synthesis with concrete trade plans across three risk profiles. You can use it from the command line, connect it to Telegram for mobile alerts, or call its capabilities over HTTP from any AI agent workflow.
+
+## Key capabilities
+
+<CardGroup cols={2}>
+  <Card title="Multi-Agent Analysis" icon="brain" href="/commands/analysis">
+    Seven specialist AI analysts debate a stock simultaneously, then a fund manager synthesizes a verdict with entry, stop-loss, and targets across aggressive, neutral, and conservative profiles.
+  </Card>
+  <Card title="Strategy Builder" icon="wand-magic-sparkles" href="/commands/strategy">
+    Describe a trading strategy in plain English. The AI interviews you about parameters, generates Python code, and immediately backtests it on NSE history.
+  </Card>
+  <Card title="Backtesting" icon="chart-line" href="/commands/backtesting">
+    Run RSI, EMA crossover, MACD, and Bollinger Bands backtests on any NSE or BSE symbol. Walk-forward testing and what-if scenario simulation are also included.
+  </Card>
+  <Card title="Telegram Bot" icon="paper-plane" href="/integrations/telegram-bot">
+    Get live quotes, run full AI analysis, check FII/DII flows, and receive price alerts pushed directly to your phone — 14 commands available.
+  </Card>
+  <Card title="OpenClaw HTTP API" icon="plug" href="/api/overview">
+    Every capability is exposed as a discoverable REST skill endpoint. Any OpenClaw agent or HTTP client can call market data, trigger analysis, or manage alerts without installing the CLI.
+  </Card>
+  <Card title="Paper Trading" icon="flask" href="/guides/paper-trading">
+    Execute AI-generated trade plans with simulated capital before risking real money. The paper trading engine tracks positions, P&L, and performance statistics.
+  </Card>
+</CardGroup>
+
+## How it works
+
+When you run `analyze RELIANCE`, the CLI executes a multi-stage pipeline:
+
+- **7 analyst agents run in parallel** — Technical (RSI, MACD, EMAs, Bollinger, ATR, pivots), Fundamental (PE, ROE, ROCE), Options (Greeks, open interest), News & Macro (LLM-powered), Sentiment (FII/DII flows, market breadth), Sector Rotation, and Risk Manager.
+- **Analyst scorecard** — Each agent produces a weighted score. The scorecard combines them into a composite signal and flags conflicts between analysts.
+- **Multi-round debate** — A bull case and a bear case are argued across five LLM calls: Bull Round 1 → Bear Round 1 → Bull Rebuttal → Bear Rebuttal → Facilitator summary.
+- **Fund manager synthesis** — A single LLM call produces the final verdict: BUY, SELL, or HOLD with a confidence score and full rationale.
+- **Risk management** — Pure Python calculates position sizing adjusted for India VIX, producing three trade plans: aggressive, neutral, and conservative.
+- **Trade plans** — Each plan includes entry orders, stop-loss levels, price targets, position size in shares, and scaling logic.
+
+Standard `analyze` mode uses 8 LLM calls. `deep-analyze` uses 11 calls with every analyst fully AI-powered.
+
+## System requirements
+
+- Python 3.11 or later (3.11, 3.12, and 3.13 are tested in CI)
+- An AI provider API key or subscription (Gemini has a free tier — no credit card needed)
+- A broker connection is optional; `--no-broker` mode uses yfinance for delayed market data
+
+## License
+
+India Trade CLI is released under the [MIT License](https://github.com/hopit-ai/india-trade-cli/blob/main/LICENSE).

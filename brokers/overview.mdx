@@ -1,0 +1,60 @@
+---
+title: "Brokers"
+description: "Connect India Trade CLI to a broker for live market data and trade execution, or run without one using delayed data."
+---
+
+India Trade CLI connects to Indian brokers for live market data and trade execution. A broker is optional — you can run in no-broker mode and still get real NSE/BSE data with a short delay.
+
+## Supported brokers
+
+| Broker | Status | Notes |
+|--------|--------|-------|
+| Fyers | Fully supported | Free API, real-time WebSocket, options chain |
+| Mock/Demo | Fully supported | Synthetic data, no login needed |
+| Zerodha | Work in progress | Kite Connect required |
+| Angel One | Work in progress | SmartAPI, TOTP login |
+| Upstox | Work in progress | Free API, OAuth |
+| Groww | Work in progress | No historical data API |
+
+## Data sources
+
+India Trade CLI uses the highest-quality data source that is available. When a broker is connected, real-time data is used. When no broker is active, it falls back to delayed data.
+
+| Source | Latency | When used |
+|--------|---------|-----------|
+| Fyers WebSocket | Real-time | Primary, when Fyers is connected |
+| Broker REST API | 1–3 seconds | Fallback when WebSocket is unavailable |
+| yfinance | ~15 min delayed | No broker connected |
+| Mock | Synthetic | Demo mode |
+
+## Connect a broker
+
+Run `trade` to open the REPL, then use `login` to connect a broker:
+
+```
+> login
+```
+
+The CLI prompts you to choose a broker and walks you through authentication.
+
+## Add a second broker
+
+To connect an additional broker alongside an existing session, use `connect`:
+
+```
+> connect
+```
+
+## Disconnect
+
+To end all broker sessions and clear saved tokens:
+
+```
+> logout
+```
+
+## Next steps
+
+<Card title="Fyers setup" icon="plug" href="/brokers/fyers">
+  Connect Fyers for free real-time NSE/BSE quotes, options chain, and order placement.
+</Card>

@@ -1,0 +1,100 @@
+---
+title: "Telegram Bot"
+description: "Receive live quotes, run full AI analysis, check FII/DII flows, and get push price alerts on your phone — all from Telegram."
+---
+
+The Telegram bot gives you access to India Trade CLI from your phone. You can run full multi-agent analysis, fetch live quotes, check institutional flows, and set price alerts that fire automatically to your Telegram chat — no need to have the CLI open when an alert triggers.
+
+## Setup
+
+<Steps>
+  <Step title="Open the REPL">
+    ```bash
+    trade
+    ```
+  </Step>
+  <Step title="Run the setup wizard">
+    ```text
+    > telegram setup
+    ```
+
+    A short wizard walks you through the rest of the process.
+  </Step>
+  <Step title="Create a bot via @BotFather">
+    The wizard prompts you to:
+
+    1. Open Telegram and search for **@BotFather**
+    2. Send `/newbot`
+    3. Choose a display name (e.g. `My Trade Bot`)
+    4. Choose a username ending in `bot` (e.g. `mytrade_bot`)
+    5. Copy the token BotFather gives you
+  </Step>
+  <Step title="Enter your bot token">
+    Paste the token when the wizard asks. It is saved to your OS keychain and persists across sessions.
+  </Step>
+  <Step title="Send /start to your bot">
+    The wizard starts the bot in the background and waits for you to open Telegram and send `/start` to your new bot. Once it receives your message, it saves your chat ID and sends a test notification to confirm the connection.
+  </Step>
+  <Step title="Your bot is ready">
+    All commands are now available from the Telegram chat. Alerts fire to your phone automatically when they trigger.
+  </Step>
+</Steps>
+
+### Set the token directly in .env
+
+If you prefer to skip the wizard, set the token manually:
+
+```bash
+# .env
+TELEGRAM_BOT_TOKEN=your_token_from_botfather
+```
+
+Then start the bot from the REPL:
+
+```text
+> telegram
+```
+
+## Available commands
+
+| Command | Description |
+|---------|-------------|
+| `/quote SYMBOL` | Live NSE/BSE quote |
+| `/analyze SYMBOL` | Full 7-agent AI analysis (3–4 min) |
+| `/deepanalyze SYMBOL` | Deep analysis with 11 LLM calls (7–10 min) |
+| `/brief` | Daily market overview — NIFTY, BANKNIFTY, VIX |
+| `/flows` | FII/DII flow intelligence with buy/sell signals |
+| `/earnings` | Earnings calendar for the current quarter |
+| `/events` | Event-driven strategy recommendations for the next 7 days |
+| `/macro` | Macro snapshot — USD/INR, crude oil, gold, US 10Y yield |
+| `/alert SYMBOL ABOVE/BELOW PRICE` | Set a price alert |
+| `/alerts` | List all active alerts |
+| `/memory` | Recent trade analyses stored in the CLI |
+| `/pnl` | Portfolio P&L summary |
+| `/help` | List all available commands |
+
+## Push alerts
+
+When a price alert (or technical/conditional alert) fires, you receive a Telegram message automatically. The message includes the symbol, the condition that triggered, and the live price at the time of trigger.
+
+You do not need to have the CLI open. The bot polls for alert conditions in the background as long as the bot process is running.
+
+To set an alert:
+
+```text
+/alert RELIANCE ABOVE 2800
+```
+
+To see all active alerts:
+
+```text
+/alerts
+```
+
+## REPL status badge
+
+While a bot command is running (for example, a `/analyze` call that takes several minutes), the REPL shows a status indicator so you know the bot is active. Output from the bot thread is suppressed in the terminal — it does not interfere with your REPL session.
+
+<Note>
+  The bot runs as a background thread inside the REPL process. It stays active as long as the REPL is open. If you close the REPL, the bot stops and alerts are no longer polled. Restart with `telegram` from a new REPL session.
+</Note>

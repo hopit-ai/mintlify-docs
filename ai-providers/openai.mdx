@@ -1,0 +1,128 @@
+---
+title: 'OpenAI & compatible'
+description: 'Use OpenAI GPT models or any OpenAI-compatible endpoint with India Trade CLI.'
+---
+
+India Trade CLI supports OpenAI's API and any provider that exposes an OpenAI-compatible endpoint — including OpenRouter, Groq, Together AI, LM Studio, and vLLM.
+
+<Tabs>
+  <Tab title="OpenAI API">
+    ## Prerequisites
+
+    - An OpenAI account at [platform.openai.com](https://platform.openai.com)
+    - Python package: `pip install openai` (included in the default install)
+
+    <Note>
+      A ChatGPT Plus subscription does **not** include API credits. API usage is billed separately through your [platform.openai.com](https://platform.openai.com) account.
+    </Note>
+
+    ## Setup
+
+    <Steps>
+      <Step title="Get an API key">
+        Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys) and create a new secret key.
+      </Step>
+      <Step title="Add your key">
+        Run the interactive setup wizard:
+
+        ```bash
+        credentials setup
+        ```
+
+        Or set it directly in your `.env`:
+
+        ```bash .env
+        OPENAI_API_KEY=your_openai_api_key_here
+        ```
+      </Step>
+      <Step title="Set your provider">
+        ```bash .env
+        AI_PROVIDER=openai
+        ```
+      </Step>
+    </Steps>
+
+    ## Example `.env` configuration
+
+    ```bash .env
+    AI_PROVIDER=openai
+    OPENAI_API_KEY=your_openai_api_key_here
+
+    # Optional: override the default model
+    # AI_MODEL=gpt-4o-mini
+    ```
+
+    ## Available models
+
+    | Model | Notes |
+    |---|---|
+    | `gpt-4o` | Default. Best capability and speed balance. |
+    | `gpt-4o-mini` | Lower cost. Suitable for most queries. |
+    | `gpt-4-turbo` | Previous generation. Higher context window. |
+
+    ```bash .env
+    AI_MODEL=gpt-4o-mini
+    ```
+
+    ## Switch in the REPL
+
+    ```text
+    provider openai
+    ```
+  </Tab>
+  <Tab title="OpenAI-compatible endpoints">
+    Any provider that implements the OpenAI Chat Completions API works with India Trade CLI. This includes OpenRouter, Groq, Together AI, LM Studio, vLLM, and others.
+
+    ## Setup
+
+    <Steps>
+      <Step title="Get credentials from your provider">
+        Sign up at your chosen provider and get an API key and base URL. For example:
+        - **OpenRouter**: [openrouter.ai/keys](https://openrouter.ai/keys) → base URL: `https://openrouter.ai/api/v1`
+        - **Groq**: [console.groq.com](https://console.groq.com) → base URL: `https://api.groq.com/openai/v1`
+        - **Together AI**: [api.together.xyz](https://api.together.xyz) → base URL: `https://api.together.xyz/v1`
+      </Step>
+      <Step title="Configure your `.env`">
+        Set `AI_PROVIDER=openai` along with your base URL, API key, and model name:
+
+        ```bash .env
+        AI_PROVIDER=openai
+        OPENAI_BASE_URL=https://openrouter.ai/api/v1
+        OPENAI_API_KEY=sk-or-v1-your_key_here
+        OPENAI_MODEL=anthropic/claude-sonnet-4
+        ```
+
+        The `OPENAI_MODEL` value must match the model name used by your provider.
+      </Step>
+    </Steps>
+
+    ## Example: OpenRouter
+
+    ```bash .env
+    AI_PROVIDER=openai
+    OPENAI_BASE_URL=https://openrouter.ai/api/v1
+    OPENAI_API_KEY=sk-or-v1-your_openrouter_key_here
+    OPENAI_MODEL=google/gemini-2.5-pro
+    ```
+
+    ## Interactive setup
+
+    You can also configure a custom endpoint through the credentials wizard:
+
+    ```bash
+    credentials setup
+    ```
+
+    Select **AI Provider** → **Custom** and enter your base URL, API key, and model name when prompted.
+
+    ## Switch in the REPL
+
+    ```text
+    provider openai
+    ```
+
+    <Note>
+      When `OPENAI_BASE_URL` is set, the active provider label in the REPL shows the endpoint hostname and model name instead of "OpenAI".
+    </Note>
+  </Tab>
+</Tabs>

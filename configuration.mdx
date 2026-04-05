@@ -1,0 +1,184 @@
+---
+title: "Configuration"
+description: "Reference for all environment variables and configuration options in India Trade CLI."
+---
+
+India Trade CLI reads configuration from a `.env` file in the project root. Copy `.env.example` to `.env` and edit the values you need.
+
+```bash
+cp .env.example .env
+```
+
+<Note>
+  You don't need to edit `.env` manually. Run `trade` and use the interactive setup wizard, or run `credentials setup` from inside the REPL at any time. Credentials are saved to your OS keychain — see [Credential storage](#credential-storage) below.
+</Note>
+
+## AI provider
+
+Set `AI_PROVIDER` to one of the supported values, then supply the corresponding API key.
+
+```bash .env
+# Choose one: anthropic, openai, gemini, claude_subscription, ollama, openai_subscription
+AI_PROVIDER=gemini
+
+GEMINI_API_KEY=your_gemini_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional: override the default model for the chosen provider
+# Anthropic:  claude-opus-4-5, claude-sonnet-4-5, claude-haiku-3-5
+# OpenAI:     gpt-4o, gpt-4o-mini, gpt-4-turbo
+# Gemini:     gemini-2.5-pro, gemini-2.0-flash, gemini-1.5-pro
+# AI_MODEL=gemini-2.5-pro
+
+# Optional: use a custom OpenAI-compatible endpoint (OpenRouter, Groq, Together, LM Studio, etc.)
+# OPENAI_BASE_URL=https://openrouter.ai/api/v1
+```
+
+| Variable | Description |
+|---|---|
+| `AI_PROVIDER` | The AI provider to use. One of `anthropic`, `openai`, `gemini`, `claude_subscription`, `ollama`, `openai_subscription`, `gemini_subscription`. |
+| `GEMINI_API_KEY` | Google AI Studio API key. Free tier available at [aistudio.google.com](https://aistudio.google.com). |
+| `ANTHROPIC_API_KEY` | Anthropic Claude API key from [console.anthropic.com](https://console.anthropic.com). Not required when using `claude_subscription`. |
+| `OPENAI_API_KEY` | OpenAI API key from [platform.openai.com](https://platform.openai.com). Also used for OpenAI-compatible endpoints like OpenRouter. |
+| `AI_MODEL` | Override the default model for the chosen provider. Optional. |
+| `OPENAI_BASE_URL` | Custom base URL for OpenAI-compatible endpoints. Set to e.g. `https://openrouter.ai/api/v1` to use OpenRouter. Requires `AI_PROVIDER=openai`. |
+
+You can switch providers at runtime with the `provider` command in the REPL:
+
+```text
+> provider gemini
+```
+
+## Trading settings
+
+```bash .env
+# Your total trading capital in INR
+TOTAL_CAPITAL=200000
+
+# Maximum risk per trade as a percentage of capital (e.g. 2 = 2%)
+DEFAULT_RISK_PCT=2
+
+# PAPER for simulated trades, LIVE for real order execution
+TRADING_MODE=PAPER
+```
+
+| Variable | Default | Description |
+|---|---|---|
+| `TOTAL_CAPITAL` | `200000` | Your total trading capital in INR. Used for position sizing calculations. |
+| `DEFAULT_RISK_PCT` | `2` | Maximum risk per trade as a percentage of capital. |
+| `TRADING_MODE` | `PAPER` | Set to `PAPER` for simulated trades or `LIVE` for real order execution. |
+
+<Warning>
+  Set `TRADING_MODE=LIVE` only when you intend to place real orders with your connected broker. In `PAPER` mode all executions are simulated and no orders are sent to the exchange.
+</Warning>
+
+## News
+
+```bash .env
+# Free tier: 100 requests/day — https://newsapi.org/
+# NEWSAPI_KEY=your_newsapi_key_here
+NEWSAPI_ENABLED=1
+```
+
+| Variable | Default | Description |
+|---|---|---|
+| `NEWSAPI_KEY` | — | API key from [newsapi.org](https://newsapi.org). Improves `morning-brief` and news-driven analysis. Free tier is 100 requests per day. |
+| `NEWSAPI_ENABLED` | `1` | Set to `0` to disable NewsAPI requests entirely. |
+
+## Telegram
+
+```bash .env
+# Create via @BotFather on Telegram
+# TELEGRAM_BOT_TOKEN=your_bot_token_here
+```
+
+| Variable | Description |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather on Telegram. Required to use the Telegram trading bot. Run `telegram setup` in the REPL for a guided setup wizard. |
+
+See [Telegram Bot](/integrations/telegram-bot) for setup instructions.
+
+## Fyers broker
+
+```bash .env
+# Get from https://myapi.fyers.in
+# FYERS_APP_ID=XXXX-100
+# FYERS_SECRET_KEY=your_secret_here
+FYERS_REDIRECT_URL=http://127.0.0.1:8765/fyers/callback
+```
+
+| Variable | Description |
+|---|---|
+| `FYERS_APP_ID` | Your Fyers app ID in the format `XXXX-100`. Get it from [myapi.fyers.in](https://myapi.fyers.in). |
+| `FYERS_SECRET_KEY` | Your Fyers app secret key. |
+| `FYERS_REDIRECT_URL` | OAuth redirect URL. Must be exactly `http://127.0.0.1:8765/fyers/callback`. |
+
+See [Brokers: Fyers](/brokers/fyers) for full setup instructions.
+
+---
+
+## Position sizing
+
+The CLI automatically sizes positions based on your capital, risk tolerance, and current market volatility.
+
+```text
+Max Risk = Capital × Risk% × VIX Adjustment
+Shares   = Max Risk ÷ Stop-Loss Distance (per share)
+```
+
+India VIX is used to scale position sizes down during high-volatility periods:
+
+| India VIX | Position size multiplier |
+|---|---|
+| Below 15 | 100% (normal) |
+| 15–20 | 85% |
+| 20–25 | 65% |
+| Above 25 | 50% |
+
+For example, with `TOTAL_CAPITAL=200000`, `DEFAULT_RISK_PCT=2`, and VIX at 22:
+
+```text
+Max Risk = 200,000 × 2% × 65% = ₹2,600
+```
+
+If the stop-loss distance on a trade is ₹26 per share, the position size is 100 shares.
+
+---
+
+## Data flow priority
+
+The CLI uses the best available data source automatically:
+
+| Source | Latency | When used |
+|---|---|---|
+| Fyers WebSocket | Real-time | Primary source when a broker is connected |
+| Broker REST API | 1–3 seconds | Fallback when WebSocket is unavailable |
+| yfinance | ~15 minutes delayed | Used when no broker is logged in (`--no-broker` mode) |
+| Mock data | Synthetic | Demo mode only |
+
+---
+
+## Credential storage
+
+API keys and broker credentials are stored in your operating system's native keychain via the [`keyring`](https://pypi.org/project/keyring/) library — not in plain text on disk.
+
+| Platform | Keychain used |
+|---|---|
+| macOS | macOS Keychain |
+| Linux | Linux Secret Service (GNOME Keyring / KWallet) |
+| Windows | Windows Credential Locker |
+
+Broker session tokens are cached under `~/.trading_platform/` and deleted automatically on logout.
+
+<Note>
+  On Linux, if you see `keyring` errors, install the Secret Service backend: `sudo apt install gnome-keyring`. Alternatively, you can set credentials directly in your `.env` file as a fallback.
+</Note>
+
+To manage credentials interactively, run `credentials setup` from the REPL:
+
+```text
+> credentials setup
+```
+
+This walks you through configuring your AI provider, broker, and optional services without editing any files.

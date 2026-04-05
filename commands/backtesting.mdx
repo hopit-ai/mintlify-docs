@@ -1,0 +1,71 @@
+---
+title: "Backtesting"
+description: "Backtest built-in strategies, run walk-forward tests, model what-if scenarios, and analyze portfolio risk."
+---
+
+The backtesting engine lets you test common strategies on any NSE or BSE stock using historical data. Results include total return, CAGR, Sharpe ratio, max drawdown, win rate, and a trade-by-trade log.
+
+<Note>
+Past backtest performance does not guarantee future results. Backtests cannot account for slippage, liquidity constraints, or market impact. Use them to compare strategy shapes and risk profiles, not to predict returns.
+</Note>
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `backtest RELIANCE rsi` | RSI overbought/oversold strategy |
+| `backtest RELIANCE ma 20 50` | 20/50 EMA crossover |
+| `backtest RELIANCE macd` | MACD signal line crossover |
+| `backtest RELIANCE bb` | Bollinger Bands mean reversion |
+| `walkforward RELIANCE rsi` | Walk-forward test over rolling windows |
+| `whatif nifty -3` | What if NIFTY drops 3%? (uses real stock beta) |
+| `pairs` | Scan for pair trading opportunities across NIFTY 50 |
+| `pairs HDFCBANK ICICIBANK` | Analyze a specific stock pair |
+| `risk-report` | VaR / CVaR portfolio risk analysis |
+| `greeks` | Portfolio Greeks — net Delta, Theta, Vega |
+
+## Standard backtest
+
+```text
+backtest RELIANCE rsi
+backtest TCS ma 10 30
+backtest INFY macd --period 2y
+backtest HDFCBANK bb --period 6m
+```
+
+Use `--period` to set the lookback window. Accepted formats: `6m`, `1y`, `2y`, `3y`. The default is `1y`.
+
+## Walk-forward testing
+
+Standard backtesting fits a strategy to a single historical window. Walk-forward testing splits the full period into rolling in-sample / out-of-sample windows and reports performance on each out-of-sample slice — a more robust way to detect overfitting.
+
+```text
+walkforward RELIANCE rsi
+walkforward TCS ma --period 3y
+```
+
+## What-if simulator
+
+`whatif` models how your current portfolio would be affected by a market or stock move, using real beta correlations from your holdings and positions.
+
+```text
+whatif nifty -3          # NIFTY drops 3%
+whatif RELIANCE -10      # RELIANCE drops 10%
+whatif RELIANCE -5 TCS 3 # multiple stock scenario
+```
+
+## Pairs trading
+
+`pairs` scans NIFTY 50 for cointegrated pairs with elevated z-scores — candidates for long/short spread trades. Pass two symbols to analyze a specific pair:
+
+```text
+pairs
+pairs HDFCBANK ICICIBANK
+pairs INFY TCS
+```
+
+## Portfolio risk
+
+`risk-report` computes Value at Risk (VaR) and Conditional VaR (CVaR) across your open holdings and positions, showing the estimated loss at the 95% and 99% confidence levels.
+
+`greeks` shows aggregate portfolio Greeks for your F&O positions — net Delta, net Theta (daily time decay in rupees), and net Vega (sensitivity to a 1% change in IV) — along with warnings when any Greek is outside normal bounds.

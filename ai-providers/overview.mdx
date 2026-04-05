@@ -1,0 +1,62 @@
+---
+title: 'AI Providers'
+description: 'India Trade CLI works with multiple AI providers. You can switch anytime without restarting.'
+---
+
+India Trade CLI works with multiple AI providers. You can switch between them at any time — from the REPL, or by editing your `.env` file.
+
+## Provider comparison
+
+| Provider | Cost | Setup complexity | Notes |
+|---|---|---|---|
+| Gemini | Free tier available | Low | Free key from [aistudio.google.com](https://aistudio.google.com) |
+| Claude (subscription) | Free with Pro/Max plan | Low | Requires Claude CLI — no API key needed |
+| Claude API | Pay per token | Low | Key from [console.anthropic.com](https://console.anthropic.com) |
+| OpenAI API | Pay per token | Low | Key from [platform.openai.com](https://platform.openai.com) |
+| Ollama | Free (local) | Medium | Run models on your machine — no internet required |
+| OpenAI-compatible | Varies | Low–Medium | OpenRouter, Groq, Together AI, LM Studio, and others |
+
+<Tip>
+If you're new to India Trade CLI, start with **Gemini**. It has a generous free tier and requires only a single API key with no additional installs.
+</Tip>
+
+## Switch providers
+
+You can switch providers at any time from within the REPL:
+
+```text
+provider gemini
+provider claude_subscription
+provider anthropic
+provider openai
+provider ollama
+```
+
+Running `provider` with no arguments shows your currently active provider:
+
+```text
+provider
+```
+
+You can also set the default in your `.env` file so it persists across sessions:
+
+```bash .env
+AI_PROVIDER=gemini
+```
+
+## Provider pages
+
+<CardGroup cols={2}>
+  <Card title="Gemini" icon="google" href="/ai-providers/gemini">
+    Free tier via Google AI Studio. Recommended for new users.
+  </Card>
+  <Card title="Claude" icon="robot" href="/ai-providers/claude">
+    Use your Claude Pro/Max subscription or an Anthropic API key.
+  </Card>
+  <Card title="OpenAI & compatible" icon="brain" href="/ai-providers/openai">
+    OpenAI GPT models, or any OpenAI-compatible endpoint.
+  </Card>
+  <Card title="Ollama" icon="server" href="/ai-providers/ollama">
+    Run models locally — fully offline, no API key required.
+  </Card>
+</CardGroup>

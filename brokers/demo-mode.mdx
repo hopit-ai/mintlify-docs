@@ -1,0 +1,64 @@
+---
+title: "Demo Mode"
+description: "Run India Trade CLI without a broker account. Demo mode uses real NSE/BSE data from yfinance and supports most analysis features."
+---
+
+Demo mode lets you run India Trade CLI without connecting to a broker. No account, no login, no API keys required — you can start analyzing stocks immediately.
+
+## When to use demo mode
+
+- You want to try India Trade CLI before setting up a broker
+- You're testing or building a trading strategy
+- You're learning the interface and commands
+- You don't need real-time quotes or live order placement
+
+## How to start
+
+**Option 1:** Pass `--no-broker` when launching the CLI:
+
+```bash
+trade --no-broker
+```
+
+**Option 2:** Start the REPL normally, then choose demo mode at the broker prompt:
+
+```
+> login 0
+```
+
+Either method starts a session backed by the mock broker, which delegates market data to yfinance.
+
+<Tip>
+  `--no-broker` does not mean no data. India Trade CLI fetches real NSE/BSE prices from yfinance, which is about 15 minutes delayed. Technical analysis, fundamental analysis, sentiment, and sector analysis all work with this data.
+</Tip>
+
+## What works in demo mode
+
+| Feature | Available |
+|---------|-----------|
+| Technical analysis | Yes |
+| Fundamental analysis | Yes |
+| Sentiment analysis | Yes |
+| Sector analysis | Yes |
+| AI analysis (`analyze`, `deep-analyze`) | Yes |
+| Historical OHLCV data | Yes (via yfinance) |
+| Backtesting | Yes |
+| Strategy builder | Yes |
+
+## What requires a broker
+
+| Feature | Requires |
+|---------|----------|
+| Real-time quotes | Broker (Fyers recommended) |
+| Options chain | Broker (Fyers recommended) |
+| Live order placement | Broker |
+| FII/DII WebSocket data | Broker |
+| Holdings and positions | Broker |
+
+## Next steps
+
+When you're ready for real-time data, connect Fyers — it's free.
+
+<Card title="Fyers setup" icon="plug" href="/brokers/fyers">
+  Free real-time NSE/BSE quotes, options chain, and order placement.
+</Card>

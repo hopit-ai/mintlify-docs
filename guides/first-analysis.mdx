@@ -1,0 +1,168 @@
+---
+title: "Your first analysis"
+description: "Run a multi-agent stock analysis from the REPL and understand every section of the output."
+---
+
+The `analyze` command runs seven AI analyst agents against a stock, puts them through a structured bull-vs-bear debate, and delivers a fund-manager-style verdict with three concrete trade plans. This guide walks you through the full experience.
+
+<Note>
+**Standard vs. deep mode.** `analyze` uses 8 LLM calls and typically completes in 30–90 seconds. `deep-analyze` uses 11 calls (every analyst is fully AI-powered) and takes 3–8 minutes. Start with `analyze` — it covers the same ground for most decisions.
+</Note>
+
+<Steps>
+  <Step title="Open the REPL">
+    If you have a broker connection set up, start the CLI:
+
+    ```bash
+    trade
+    ```
+
+    If you haven't configured a broker yet and want to start immediately, use no-broker mode. This pulls data from yfinance (~15 min delayed) so technical, fundamental, sentiment, and sector analysis all work without a broker account.
+
+    ```bash
+    trade --no-broker
+    ```
+
+    You'll see the `>` prompt once the REPL is ready.
+  </Step>
+
+  <Step title="Run a basic analysis">
+    At the prompt, type:
+
+    ```text
+    analyze RELIANCE
+    ```
+
+    You can analyze any NSE-listed symbol. Substitute `RELIANCE` with any ticker — for example, `INFY`, `TCS`, `HDFCBANK`, or `NIFTY50`.
+  </Step>
+
+  <Step title="What happens during analysis">
+    The pipeline runs in three phases:
+
+    **Phase 1 — Analyst team (parallel)**
+
+    Seven specialist agents run concurrently. Six use pure Python tools; the News & Macro analyst makes one LLM call for real sentiment analysis.
+
+    | Agent | What it looks at |
+    |---|---|
+    | Technical | RSI, MACD, EMAs, Bollinger Bands, ATR, support/resistance, volume |
+    | Fundamental | PE, PB, ROE, ROCE, debt/equity, revenue and profit growth, promoter holding |
+    | Options | Put-call ratio, max pain, IV rank, open interest patterns |
+    | News & Macro | Recent headlines, FII/DII flows, bulk/block deals, market breadth, upcoming events |
+    | Sentiment | FII/DII flow signals, A/D ratio, PCR-based sentiment |
+    | Sector Rotation | Sector performance vs. the broader market — tailwinds or headwinds |
+    | Risk Manager | India VIX level, existing portfolio exposure, position sizing |
+
+    **Phase 2 — Bull vs. bear debate (5 LLM calls)**
+
+    A bull researcher and a bear researcher argue their cases across two rounds. A facilitator then summarizes the key agreements and disagreements, and declares which side made the stronger argument.
+
+    **Phase 3 — Fund manager synthesis (1 LLM call)**
+
+    A simulated fund manager weighs the debate alongside the analyst scorecard and produces the final verdict, confidence score, and rationale.
+  </Step>
+
+  <Step title="Understanding the output">
+    The output has four distinct sections.
+
+    **Analyst scorecard**
+
+    Each analyst receives a weighted score. The weights reflect relevance to short-term equity trading:
+
+    | Analyst | Default weight |
+    |---|---|
+    | Technical | 25% |
+    | Fundamental | 20% |
+    | Risk Manager | 15% |
+    | Options | 15% |
+    | Sentiment | 10% |
+    | News & Macro | 10% |
+    | Sector Rotation | 5% |
+
+    The scorecard shows each analyst's raw score, the weighted composite total, percentage agreement across analysts, and any detected conflicts (for example, Technical BULLISH vs. Fundamental BEARISH).
+
+    **Bull/bear debate summary**
+
+    The REPL prints both opening arguments, both rebuttals, and the facilitator's summary. This section explains _why_ the verdict came out the way it did rather than just asserting it.
+
+    **Verdict**
+
+    The fund manager outputs one of five verdicts:
+
+    | Verdict | Weighted score threshold |
+    |---|---|
+    | STRONG_BUY | > +30 |
+    | BUY | > +10 |
+    | HOLD | −10 to +10 |
+    | SELL | < −10 |
+    | STRONG_SELL | < −30 |
+
+    The verdict includes a confidence percentage (0–100) and a list of key rationale points and identified risks.
+
+    **Three trade plans**
+
+    After the verdict, the Risk Management module generates three concrete plans — one per risk profile. Each plan includes an entry price or range, a stop-loss level, one or more price targets, a position size in shares (calculated from your `TOTAL_CAPITAL` and `DEFAULT_RISK_PCT` environment variables), and a risk/reward ratio.
+  </Step>
+
+  <Step title="Understanding the three risk profiles">
+    Every analysis produces three plans so you can choose the one that fits your tolerance:
+
+    | Profile | Position size | Stop-loss | Character |
+    |---|---|---|---|
+    | **Aggressive** | Larger | Wider — more room to move | Maximizes upside; accepts higher drawdown |
+    | **Neutral** | Balanced | Standard based on ATR | Balanced risk/reward; suits most traders |
+    | **Conservative** | Smaller | Tighter — quick exit if wrong | Minimizes loss; accepts smaller gains |
+
+    After the analysis completes, execute one of these plans in paper trading mode with `execute`, `execute aggressive`, or `execute conservative`. See the [Paper Trading](/guides/paper-trading) guide for details.
+  </Step>
+
+  <Step title="Save as PDF">
+    To save the full report as a PDF immediately after analysis:
+
+    ```text
+    save-pdf
+    ```
+
+    Or trigger PDF generation as part of the analysis command:
+
+    ```text
+    analyze RELIANCE --pdf
+    ```
+
+    The file is saved to `~/.trading_platform/exports/`. Use `exports` in the REPL to list, open, or clear saved PDFs.
+  </Step>
+
+  <Step title="Get a plain-English explanation">
+    If any part of the output contains jargon you want clarified, run:
+
+    ```text
+    explain
+    ```
+
+    Or combine explanation with the analysis in one command:
+
+    ```text
+    analyze RELIANCE --explain
+    ```
+
+    To explain _and_ save a PDF in one shot:
+
+    ```text
+    analyze RELIANCE --explain-save
+    ```
+  </Step>
+
+  <Step title="Try deep analysis">
+    When you want maximum analytical depth — for example, before a large position or ahead of an earnings announcement — run:
+
+    ```text
+    deep-analyze RELIANCE
+    ```
+
+    Deep mode adds three more LLM calls: each analyst agent is also given a full AI pass on top of its Python-computed data. This produces richer key points and more nuanced debate arguments. The verdict format is identical; only the depth of reasoning changes.
+  </Step>
+</Steps>
+
+<Tip>
+Start with `analyze` for most decisions — it gives you 7 analysts, a full debate, and three trade plans in under 90 seconds. Switch to `deep-analyze` when you want every layer of context before a high-conviction trade.
+</Tip>

@@ -1,0 +1,118 @@
+---
+title: 'Claude'
+description: 'Use Anthropic Claude with India Trade CLI via a subscription or an API key.'
+---
+
+India Trade CLI supports two ways to use Claude: through your existing Claude Pro or Max subscription (no API key required), or through the Anthropic API with a key.
+
+<Tabs>
+  <Tab title="Subscription (Claude Pro/Max)">
+    If you have a Claude Pro or Max subscription, you can use it directly — no API key or extra billing needed. This works by delegating to the `claude` CLI tool (Claude Code), which authenticates using your browser session.
+
+    ## Prerequisites
+
+    - An active Claude Pro or Max subscription at [claude.ai](https://claude.ai)
+    - Node.js installed (`node --version` to check)
+
+    ## Setup
+
+    <Steps>
+      <Step title="Install the Claude CLI">
+        ```bash
+        npm install -g @anthropic-ai/claude-code
+        ```
+      </Step>
+      <Step title="Log in">
+        ```bash
+        claude login
+        ```
+
+        This opens your browser to authenticate with your Claude account.
+      </Step>
+      <Step title="Set your provider">
+        ```bash .env
+        AI_PROVIDER=claude_subscription
+        ```
+      </Step>
+    </Steps>
+
+    ## Example `.env` configuration
+
+    ```bash .env
+    AI_PROVIDER=claude_subscription
+    # No API key needed
+    ```
+
+    ## Switch in the REPL
+
+    ```text
+    provider claude_subscription
+    ```
+
+    <Note>
+      The subscription mode uses a two-phase approach: tools are matched and executed locally, then a single CLI call generates the response. This keeps response times reasonable, but expect responses to take 30–90 seconds for complex queries.
+    </Note>
+  </Tab>
+  <Tab title="API key">
+    Use an Anthropic API key for direct access to Claude models. This works with personal API keys and Claude Max plans that include API access.
+
+    ## Prerequisites
+
+    - An Anthropic account at [console.anthropic.com](https://console.anthropic.com)
+    - Python package: `pip install anthropic` (included in the default install)
+
+    ## Setup
+
+    <Steps>
+      <Step title="Get an API key">
+        Go to [console.anthropic.com](https://console.anthropic.com), create an account, and generate an API key under **API Keys**.
+      </Step>
+      <Step title="Add your key">
+        Run the interactive setup wizard:
+
+        ```bash
+        credentials setup
+        ```
+
+        Or set it directly in your `.env`:
+
+        ```bash .env
+        ANTHROPIC_API_KEY=your_anthropic_api_key_here
+        ```
+      </Step>
+      <Step title="Set your provider">
+        ```bash .env
+        AI_PROVIDER=anthropic
+        ```
+      </Step>
+    </Steps>
+
+    ## Example `.env` configuration
+
+    ```bash .env
+    AI_PROVIDER=anthropic
+    ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+    # Optional: override the default model
+    # AI_MODEL=claude-sonnet-4-5
+    ```
+
+    ## Available models
+
+    | Model | Notes |
+    |---|---|
+    | `claude-opus-4-5` | Default. Most capable — best for deep analysis. |
+    | `claude-sonnet-4-5` | Balanced speed and capability. |
+    | `claude-haiku-3-5` | Fastest and lowest cost. |
+
+    ```bash .env
+    AI_MODEL=claude-sonnet-4-5
+    ```
+
+    ## Switch in the REPL
+
+    ```text
+    provider anthropic
+    ```
+  </Tab>
+</Tabs>

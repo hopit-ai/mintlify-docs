@@ -1,0 +1,89 @@
+---
+title: "Analysis Commands"
+description: "Run AI-powered multi-agent analysis on any NSE or BSE listed stock."
+---
+
+India Trade CLI's analysis commands deploy a team of seven specialized AI agents against a single stock, force them into a structured debate, and produce a fund-manager-style verdict with concrete trade plans. Every result is stored in trade memory so you can track outcomes over time.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `analyze RELIANCE` | Multi-agent analysis — 7 analysts + debate + 3 trade plans |
+| `deep-analyze RELIANCE` | Full LLM mode — 11 AI calls, every analyst uses AI |
+| `ai <message>` | Chat with the trading agent — follow-ups keep context, `clear` to reset |
+| `morning-brief` | Daily NSE/BSE market context with AI narrative |
+| `mtf RELIANCE` | Multi-timeframe analysis (weekly / daily / hourly confluence) |
+
+## Analysis pipeline
+
+Running `analyze RELIANCE` triggers a five-phase pipeline:
+
+<Steps>
+  <Step title="Analyst team">
+    Seven analyst agents run in parallel. Each uses pure Python tools — except the News & Macro analyst, which uses one LLM call for real sentiment analysis rather than keyword matching.
+
+    | Analyst | What it examines |
+    |---------|-----------------|
+    | Technical | RSI, MACD, EMAs, Bollinger Bands, support and resistance |
+    | Fundamental | PE, PB, ROE, ROCE, revenue growth, promoter holding |
+    | Options | PCR, max pain, IV rank, OI patterns |
+    | News & Macro | Headlines, FII/DII flows, market breadth, upcoming events |
+    | Sentiment | FII/DII flow signal, advance/decline ratio, PCR |
+    | Sector Rotation | Sector vs broader market performance |
+    | Risk Manager | India VIX, position sizing, portfolio concentration |
+  </Step>
+  <Step title="Weighted scorecard">
+    Each analyst's output is mapped to a numeric score. A weighted composite is computed with conflict detection — if Technical is BULLISH while Fundamental is BEARISH, the conflict is surfaced explicitly.
+  </Step>
+  <Step title="Bull vs bear debate">
+    A Bullish Researcher and a Bearish Researcher argue two full rounds (Bull R1 → Bear R1 → Bull Rebuttal → Bear Rebuttal), followed by a Facilitator summary. This phase uses five LLM calls.
+  </Step>
+  <Step title="Fund manager synthesis">
+    A Fund Manager agent reads the scorecard, the full debate, and the risk profile to produce a final verdict (STRONG_BUY / BUY / HOLD / SELL / STRONG_SELL) with confidence, rationale, and key risks.
+  </Step>
+  <Step title="Risk management — 3 trade plans">
+    A pure-Python Trader agent generates three concrete trade plans from the synthesis output — one for each risk profile — with entry, stop-loss, target, and position sizing.
+  </Step>
+</Steps>
+
+## Standard mode vs deep mode
+
+| | Standard (`analyze`) | Deep (`deep-analyze`) |
+|-|----------------------|-----------------------|
+| LLM calls | 8 | 11 |
+| Analyst method | Pure Python (except News & Macro) | Every analyst uses AI |
+| Typical time | 30–90 seconds | 3–8 minutes |
+| Best for | Daily workflow | Thorough pre-trade research |
+
+<Warning>
+`deep-analyze` makes 11 LLM calls. Expect 3–8 minutes depending on your AI provider and network. On free-tier Gemini this may hit rate limits — switch to Claude or OpenAI if needed.
+</Warning>
+
+## Output flags
+
+Append these flags to any analysis command:
+
+| Flag | Effect |
+|------|--------|
+| `--pdf` | Save the full output as a PDF in `~/.trading_platform/exports/` |
+| `--explain` | Add a plain-English explanation after the output |
+| `--explain-save` | Add plain-English explanation and save as PDF in one shot |
+
+```text
+analyze RELIANCE --pdf
+deep-analyze INFY --explain
+analyze TCS --explain-save
+```
+
+## Memory integration
+
+Every `analyze` and `deep-analyze` run is automatically saved to trade memory. Use the `memory` commands to review your history and record outcomes:
+
+```text
+memory RELIANCE          # past analyses for RELIANCE
+memory stats             # win rate, P&L, and performance statistics
+memory outcome ID WIN 1250   # record the outcome of a specific trade
+```
+
+See [Portfolio & Account](/commands/portfolio) for the full memory command reference.

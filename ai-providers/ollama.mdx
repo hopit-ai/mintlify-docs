@@ -1,0 +1,74 @@
+---
+title: 'Ollama'
+description: 'Run AI models locally with Ollama. Free, private, and works without an internet connection.'
+---
+
+Ollama lets you run large language models on your own machine — no API key, no usage costs, and no data leaving your computer. This is useful if you want full privacy or are working offline.
+
+## Prerequisites
+
+- A machine with sufficient RAM for the model you want to run (8 GB minimum for smaller models; 16 GB+ recommended for good performance)
+- Ollama installed (see below)
+
+## Setup
+
+<Steps>
+  <Step title="Install Ollama">
+    <Tabs>
+      <Tab title="macOS">
+        ```bash
+        brew install ollama
+        ```
+
+        Or download the desktop app from [ollama.ai](https://ollama.ai).
+      </Tab>
+      <Tab title="Linux">
+        ```bash
+        curl -fsSL https://ollama.ai/install.sh | sh
+        ```
+      </Tab>
+      <Tab title="Windows">
+        Download the installer from [ollama.ai](https://ollama.ai/download).
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Pull a model">
+    ```bash
+    ollama pull llama3.1
+    ```
+
+    Other models you can use: `mistral`, `gemma2`, `phi3`, `codellama`. Browse available models at [ollama.ai/library](https://ollama.ai/library).
+  </Step>
+  <Step title="Start the Ollama server">
+    Ollama starts automatically on macOS after installation. On Linux, start it with:
+
+    ```bash
+    ollama serve
+    ```
+  </Step>
+  <Step title="Configure India Trade CLI">
+    ```bash .env
+    AI_PROVIDER=ollama
+    OLLAMA_MODEL=llama3.1
+    OLLAMA_BASE_URL=http://localhost:11434/v1
+    ```
+  </Step>
+</Steps>
+
+## Example `.env` configuration
+
+```bash .env
+AI_PROVIDER=ollama
+OLLAMA_MODEL=llama3.1
+OLLAMA_BASE_URL=http://localhost:11434/v1
+```
+
+## Switch in the REPL
+
+```text
+provider ollama
+```
+
+<Note>
+Local models are generally slower and less accurate than cloud providers for financial analysis tasks. Complex queries — such as multi-stock comparisons, options analysis, or detailed fundamentals — may produce lower-quality responses. For best results, use a cloud provider for analytical work and reserve Ollama for privacy-sensitive or offline scenarios.
+</Note>

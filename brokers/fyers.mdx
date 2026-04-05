@@ -1,0 +1,94 @@
+---
+title: "Fyers"
+description: "Connect Fyers for free real-time NSE/BSE quotes, options chain data, historical OHLCV, and live order placement."
+---
+
+Fyers is the recommended broker for India Trade CLI. It offers a free developer API with real-time NSE and BSE data, a live WebSocket feed, and full options chain support — no monthly subscription required.
+
+## Prerequisites
+
+Any Fyers trading or demat account. If you don't have one, sign up at [fyers.in](https://fyers.in) before starting.
+
+## Setup
+
+<Steps>
+  <Step title="Create a Fyers account">
+    If you don't already have one, sign up at [fyers.in](https://fyers.in). Any trading or demat account works — you don't need a premium plan.
+  </Step>
+  <Step title="Open the API dashboard">
+    Go to [myapi.fyers.in](https://myapi.fyers.in) and log in with your Fyers credentials.
+  </Step>
+  <Step title="Create an app">
+    Click **Create App** and fill in the following fields:
+
+    - **App Name:** anything you like (for example, `TradeCLI`)
+    - **Redirect URL:** `http://127.0.0.1:8765/fyers/callback` — this must be exact
+    - **App Type:** Personal
+    - **Description:** optional
+
+    <Warning>
+      The Redirect URL must be exactly `http://127.0.0.1:8765/fyers/callback`. Any variation — including a trailing slash or `https` — will cause authentication to fail.
+    </Warning>
+  </Step>
+  <Step title="Copy your credentials">
+    After creating the app, the dashboard shows your **App ID** (format: `XXXX-100`) and **Secret Key**. Copy both — you'll need them in the next step.
+  </Step>
+  <Step title="Enter credentials in India Trade CLI">
+    Run `trade`, then choose **[5] Fyers** when prompted for a broker. Paste your App ID and Secret Key when asked.
+
+    ```bash
+    trade
+    ```
+
+    ```
+    Select broker: [5] Fyers
+    App ID: XXXX-100
+    Secret Key: ••••••••••••••••
+    ```
+  </Step>
+  <Step title="Complete OAuth login">
+    A browser window opens automatically for Fyers OAuth login. Log in with your Fyers account. Once you confirm access, the terminal completes authentication — no copy-pasting required.
+  </Step>
+</Steps>
+
+## Token caching
+
+After a successful login, your session token is saved automatically. The token is valid for 12 hours. On subsequent runs within that window, India Trade CLI re-authenticates automatically — you don't need to log in again.
+
+## Real-time WebSocket
+
+Once you're logged in, a WebSocket connection to Fyers opens automatically. Live quotes for any symbol you look up stream in real time via this connection.
+
+## What you get with Fyers
+
+- Real-time NSE and BSE quotes via WebSocket
+- Full options chain with OI, IV, and volume
+- Historical OHLCV data (daily, 1m, 5m, 15m, 30m, 60m)
+- Live order placement, order book, holdings, and positions
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title='"invalid app id hash" error'>
+    This means your App ID and Secret Key don't match — usually caused by re-creating the Fyers app or entering the wrong values. Clear the stored credentials and log in again:
+
+    ```
+    > credentials delete FYERS_APP_ID
+    > credentials delete FYERS_SECRET_KEY
+    > login
+    ```
+
+    When prompted, re-enter the correct App ID and Secret Key from [myapi.fyers.in](https://myapi.fyers.in). The App ID format is `XXXX-100`.
+  </Accordion>
+  <Accordion title="Browser does not open">
+    Copy the URL printed in the terminal and open it manually. After logging in, the terminal will detect the callback and complete authentication automatically.
+  </Accordion>
+  <Accordion title="Session expired mid-session">
+    Fyers tokens are valid for 12 hours. If your session expires, run `logout` then `login` to start a new session.
+
+    ```
+    > logout
+    > login
+    ```
+  </Accordion>
+</AccordionGroup>

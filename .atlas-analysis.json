@@ -1,0 +1,151 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "India Trade CLI",
+  "projectDescription": "An open-source AI-powered terminal for trading Indian stocks and derivatives on NSE/BSE, featuring multi-agent analysis, strategy backtesting, a Telegram bot, and a REST API for OpenClaw agents.",
+  "theme": "luma",
+  "primaryColor": "#94cb04",
+  "lightColor": "#545454",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "configuration"
+            ]
+          },
+          {
+            "group": "AI Providers",
+            "pages": [
+              "ai-providers/overview",
+              "ai-providers/gemini",
+              "ai-providers/claude",
+              "ai-providers/openai",
+              "ai-providers/ollama"
+            ]
+          },
+          {
+            "group": "Brokers",
+            "pages": [
+              "brokers/overview",
+              "brokers/fyers",
+              "brokers/demo-mode"
+            ]
+          },
+          {
+            "group": "CLI Commands",
+            "pages": [
+              "commands/analysis",
+              "commands/market-data",
+              "commands/strategy",
+              "commands/backtesting",
+              "commands/alerts",
+              "commands/portfolio",
+              "commands/trade-execution"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/telegram-bot",
+              "integrations/openclaw"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-analysis",
+              "guides/build-a-strategy",
+              "guides/paper-trading",
+              "guides/price-alerts"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "HTTP API",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Skills",
+            "pages": [
+              "api/skills/quotes",
+              "api/skills/analysis",
+              "api/skills/alerts",
+              "api/skills/market-data"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "7 AI analyst agents (Technical, Fundamental, Options, News, Sentiment, Sector Rotation, Risk Manager) with bull-vs-bear debate and fund-manager synthesis",
+    "Interactive REPL with 35+ commands for live quotes, analysis, and trade execution",
+    "Quantitative strategy builder — describe in plain English, AI generates and backtests Python code",
+    "Paper trading engine to simulate AI trade plans without real money",
+    "Telegram bot with 14 commands and push price alerts",
+    "OpenClaw HTTP skill server exposing 17 REST endpoints for agent integration",
+    "Support for multiple AI providers: Gemini (free), Claude, OpenAI, Ollama, and any OpenAI-compatible endpoint",
+    "Fyers broker integration for real-time NSE/BSE WebSocket data",
+    "VaR/CVaR portfolio risk analysis, options Greeks, and pair trading",
+    "Walk-forward backtesting, what-if simulator, and model drift detection"
+  ],
+  "publicApiSurface": [
+    "trade (CLI entrypoint)",
+    "analyze <SYMBOL>",
+    "deep-analyze <SYMBOL>",
+    "morning-brief",
+    "mtf <SYMBOL>",
+    "strategy new / list / backtest / run / show / delete",
+    "backtest <SYMBOL> <strategy>",
+    "walkforward <SYMBOL> <strategy>",
+    "whatif <INDEX> <pct>",
+    "alert <SYMBOL> <condition> <threshold>",
+    "alerts / alert remove <ID>",
+    "quote <SYMBOL>",
+    "earnings / flows / events / macro / deals / patterns",
+    "risk-report / greeks / pairs",
+    "execute [aggressive|conservative]",
+    "memory / memory stats / profile / drift / audit",
+    "funds / holdings / positions / orders / portfolio",
+    "login / logout / connect / provider / credentials",
+    "telegram setup",
+    "web (start skill server)",
+    "POST /skills/quote",
+    "POST /skills/analyze",
+    "POST /skills/deep_analyze",
+    "POST /skills/morning_brief",
+    "POST /skills/backtest",
+    "POST /skills/pairs",
+    "POST /skills/chat",
+    "POST /skills/chat/reset",
+    "POST /skills/flows",
+    "POST /skills/earnings",
+    "POST /skills/options_chain",
+    "POST /skills/macro",
+    "POST /skills/deals",
+    "POST /skills/alerts/add",
+    "POST /skills/alerts/list",
+    "POST /skills/alerts/remove",
+    "POST /skills/alerts/check",
+    "GET /.well-known/openclaw.json"
+  ]
+}

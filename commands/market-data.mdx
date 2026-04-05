@@ -1,0 +1,68 @@
+---
+title: "Market Data"
+description: "Live quotes, earnings calendars, FII/DII flows, macro indicators, and market patterns for NSE and BSE."
+---
+
+These commands fetch market data from your connected broker or, in no-broker mode, from yfinance with approximately 15-minute delayed data.
+
+<Note>
+Real-time quotes and options chain data require a broker connection. Run `trade --no-broker` if you just want delayed data from yfinance. Technical, fundamental, sentiment, and sector analysis work fine without a broker.
+</Note>
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `quote TCS` | Live quote — price, OHLC, volume, change |
+| `earnings` | Upcoming quarterly results calendar (NIFTY 50) |
+| `earnings RELIANCE TCS` | Earnings dates for specific stocks |
+| `flows` | FII/DII flow intelligence with buy/sell signals |
+| `events` | Event-driven strategy recommendations for the next 7 days |
+| `patterns` | Active India-specific market patterns with confidence scores |
+| `macro` | USD/INR, crude oil, gold, US 10Y snapshot |
+| `macro RELIANCE` | Macro impact analysis for a specific stock |
+| `deals` | Today's bulk and block deals |
+
+## Live quotes
+
+`quote` fetches price via WebSocket cache first, then broker REST, then yfinance as a fallback. You can query a single stock or multiple at once:
+
+```text
+quote RELIANCE
+quote TCS INFY WIPRO
+quote NSE:NIFTY50-INDEX
+quote NIFTY BANKNIFTY
+```
+
+Index shorthand aliases — `NIFTY`, `BANKNIFTY`, `SENSEX`, `VIX`, `FINNIFTY` — are resolved automatically.
+
+## Earnings calendar
+
+`earnings` shows upcoming quarterly results for NIFTY 50 stocks by default. Pass one or more symbols to narrow the results:
+
+```text
+earnings
+earnings HDFCBANK ICICIBANK AXISBANK
+```
+
+## FII/DII flows
+
+`flows` reads Foreign Institutional Investor and Domestic Institutional Investor net buy/sell data from the last several sessions, computes a flow signal (BULLISH / BEARISH / NEUTRAL), detects FII-DII divergences, and shows a confidence score.
+
+## Macro indicators
+
+`macro` displays a snapshot of the key macro drivers that affect Indian equities: USD/INR, Brent crude, gold, and the US 10-year Treasury yield. Passing a stock symbol runs a linkage analysis — for example, how crude oil prices typically affect RELIANCE.
+
+```text
+macro
+macro ONGC
+macro TATASTEEL
+```
+
+## Market patterns
+
+`patterns` scans for active India-specific patterns — expiry-week behavior, pre-budget seasonality, budget day volatility, FII rebalancing periods, and similar recurring setups. Each pattern includes a confidence score and a suggested action.
+
+## Bulk and block deals
+
+`deals` shows institutional activity from that day's NSE bulk and block deal data, including buyer/seller identity, quantity, and price. This is surfaced as one of the inputs in the [Analysis pipeline](/commands/analysis).

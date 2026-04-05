@@ -1,0 +1,137 @@
+---
+title: "Troubleshooting"
+description: "Solutions for common errors and setup issues with India Trade CLI."
+---
+
+## Common errors
+
+<AccordionGroup>
+  <Accordion title="ModuleNotFoundError: kiteconnect">
+    Broker SDKs are optional and not installed by default. Install only the one you need:
+
+    ```bash
+    pip install kiteconnect
+    ```
+
+    If you don't have a Zerodha account, use Demo mode instead — no broker account required:
+
+    ```bash
+    login 0
+    ```
+  </Accordion>
+
+  <Accordion title="ModuleNotFoundError: feedparser">
+    `feedparser` is an optional dependency for RSS news feeds. Install it with:
+
+    ```bash
+    pip install feedparser
+    ```
+
+    The CLI works without it — RSS feeds are not required for any core feature.
+  </Accordion>
+
+  <Accordion title="py_vollib errors">
+    `py_vollib` uses `numba` for JIT compilation, which may not be compatible with all Python versions or environments. India Trade CLI detects this automatically and falls back to its built-in Black-Scholes calculations — no action required on your part.
+
+    If you want to resolve the `py_vollib` error directly, check that your Python version (3.11, 3.12, or 3.13) is supported by the version of `numba` you have installed.
+  </Accordion>
+
+  <Accordion title="NSE API returns empty data">
+    NSE rate-limits automated requests. If you receive empty responses or errors from NSE endpoints, wait a few minutes and try again.
+
+    The CLI sends browser-like headers to reduce the frequency of blocks, but rate limits can still apply during high-traffic periods.
+  </Accordion>
+
+  <Accordion title="Fyers 'invalid app id hash'">
+    This error means your App ID and Secret Key do not match. Clear the stored credentials and re-enter them:
+
+    ```bash
+    credentials delete FYERS_APP_ID
+    credentials delete FYERS_SECRET_KEY
+    ```
+
+    Then run `login` and paste your credentials again when prompted. Make sure your App ID is in the format `XXXX-100` — this is the format Fyers assigns when you create an app at [myapi.fyers.in](https://myapi.fyers.in).
+  </Accordion>
+
+  <Accordion title="No active broker session">
+    You need to log in before running broker-dependent commands. Start a session with:
+
+    ```bash
+    login
+    ```
+
+    If you don't have a broker account, use Demo mode:
+
+    ```bash
+    login 0
+    ```
+
+    Demo mode uses synthetic data and requires no credentials.
+  </Accordion>
+
+  <Accordion title="AI commands return errors">
+    Run the credentials setup wizard to configure your AI provider:
+
+    ```bash
+    credentials setup
+    ```
+
+    If you don't have a paid API key, Gemini has a free tier with no credit card required. Get a key at [aistudio.google.com](https://aistudio.google.com).
+  </Accordion>
+
+  <Accordion title="keyring errors on Linux">
+    The `keyring` library requires a SecretService backend to store credentials securely. Install it with:
+
+    ```bash
+    sudo apt install gnome-keyring
+    ```
+
+    Alternatively, you can set credentials directly in a `.env` file in your project directory. See the [configuration reference](/configuration) for all supported environment variables.
+  </Accordion>
+
+</AccordionGroup>
+
+## Common questions
+
+<AccordionGroup>
+  <Accordion title="Can I use India Trade CLI without a broker account?">
+    Yes. Run the CLI with the `--no-broker` flag to use yfinance for NSE/BSE data with approximately 15-minute delay:
+
+    ```bash
+    trade --no-broker
+    ```
+
+    Technical analysis, fundamental analysis, AI analysis, and strategy features all work in this mode. Options chain data and live quotes require a broker connection. [Fyers](https://fyers.in) is the recommended option — the API is free.
+  </Accordion>
+
+  <Accordion title="Is my API key stored securely?">
+    Yes. India Trade CLI stores all API keys in your operating system's native keychain — macOS Keychain, Linux Secret Service, or Windows Credential Locker — using the `keyring` library. Keys are never written to disk in plain text.
+
+    Broker session tokens are cached under `~/.trading_platform/` and deleted when you run `logout`.
+  </Accordion>
+
+  <Accordion title="How much does it cost to run AI analysis?">
+    It depends on your AI provider:
+
+    - **Gemini (free tier)** — no cost
+    - **Claude Pro/Max subscription** — no additional cost beyond your subscription
+    - **Claude API or OpenAI API** — pay per token; a standard `analyze` call uses approximately 8 LLM calls
+    - **Ollama** — free; models run locally on your machine
+
+    See [AI providers](/ai-providers/overview) for the full list of supported providers and setup instructions.
+  </Accordion>
+
+  <Accordion title="How do I switch AI providers?">
+    From the REPL, run the `provider` command with the name of the provider you want to use:
+
+    ```
+    provider gemini
+    ```
+
+    Other options include `provider claude_subscription`, `provider openai`, and more. See [AI providers](/ai-providers/overview) for all available providers and their configuration.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+If you've found a bug or your issue isn't listed here, open a report at [github.com/hopit-ai/india-trade-cli/issues](https://github.com/hopit-ai/india-trade-cli/issues).

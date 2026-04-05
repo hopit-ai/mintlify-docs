@@ -1,0 +1,44 @@
+---
+title: "Authentication"
+description: "The India Trade CLI skill server has no built-in authentication layer."
+---
+
+The skill server currently has no authentication layer. All endpoints on `http://localhost:8765/skills/*` accept requests without any credentials.
+
+<Warning>
+  Keep the server bound to `127.0.0.1:8765`. Do not expose it to the public
+  internet without adding authentication. Anyone who can reach the port can call
+  any skill, including analysis and alert management.
+</Warning>
+
+## Exposing the server over a network
+
+If you need to make the skill server accessible over a network — for example, to let a remote OpenClaw agent call it — put it behind a reverse proxy that handles authentication before forwarding requests to the server.
+
+Popular options:
+
+- **nginx** — use `auth_basic` or `auth_request` to gate the upstream
+- **Caddy** — use `basicauth` or a forward auth middleware
+- **Traefik** — use `BasicAuth` or `ForwardAuth` middleware
+
+Start the server bound to localhost only:
+
+```bash
+uvicorn web.api:app --host 127.0.0.1 --port 8765
+```
+
+Then configure your reverse proxy to listen on the public interface, enforce auth, and proxy authenticated requests to `http://127.0.0.1:8765`.
+
+## Fyers OAuth callback
+
+The same FastAPI server on port 8765 also handles the Fyers OAuth redirect at `/fyers/callback`. This is used during broker login — not for skill calls.
+
+When you run `trade` and connect Fyers, a browser window opens for the Fyers OAuth flow. After you log in, Fyers redirects to `http://127.0.0.1:8765/fyers/callback` and the server completes the login automatically. You do not need to copy or paste any tokens.
+
+This is why the Fyers app redirect URL must be set to exactly:
+
+```
+http://127.0.0.1:8765/fyers/callback
+```
+
+You configure this once in the Fyers API dashboard at [myapi.fyers.in](https://myapi.fyers.in) when you create your app.

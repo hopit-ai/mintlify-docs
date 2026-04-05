@@ -1,0 +1,73 @@
+---
+title: 'Gemini'
+description: 'Use Google Gemini with India Trade CLI. Free tier available via Google AI Studio.'
+---
+
+Google Gemini is the recommended provider for new users. It offers a generous free tier through Google AI Studio and supports Gemini's latest models including 2.5 Pro.
+
+## Prerequisites
+
+- A Google account
+- Python package: `pip install google-genai` (included in the default install)
+
+## Setup
+
+<Steps>
+  <Step title="Get an API key">
+    Go to [aistudio.google.com](https://aistudio.google.com), sign in, and create an API key. It's free — no billing information required for the free tier.
+  </Step>
+  <Step title="Add your key">
+    Run the interactive setup wizard:
+
+    ```bash
+    credentials setup
+    ```
+
+    Or set it directly in your `.env` file:
+
+    ```bash .env
+    GEMINI_API_KEY=your_gemini_api_key_here
+    ```
+  </Step>
+  <Step title="Set Gemini as your provider">
+    ```bash .env
+    AI_PROVIDER=gemini
+    ```
+  </Step>
+</Steps>
+
+## Example `.env` configuration
+
+```bash .env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional: override the default model
+# AI_MODEL=gemini-2.0-flash
+```
+
+## Available models
+
+Set the model with the `AI_MODEL` variable in your `.env`:
+
+| Model | Notes |
+|---|---|
+| `gemini-2.5-pro` | Default. Best reasoning and analysis quality. |
+| `gemini-2.0-flash` | Faster and cheaper. Good for quick queries. |
+| `gemini-1.5-pro` | Previous generation. Stable and widely tested. |
+
+```bash .env
+AI_MODEL=gemini-2.0-flash
+```
+
+## Switch in the REPL
+
+To switch to Gemini without editing `.env`:
+
+```text
+provider gemini
+```
+
+<Tip>
+The free tier on Google AI Studio includes a substantial daily request limit for Gemini 2.5 Pro and 2.0 Flash. For most personal trading analysis workflows, you are unlikely to hit the limit. Check current limits at [ai.google.dev/gemini-api/docs/rate-limits](https://ai.google.dev/gemini-api/docs/rate-limits).
+</Tip>

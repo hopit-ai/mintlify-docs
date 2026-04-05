@@ -1,0 +1,90 @@
+---
+title: "HTTP API Overview"
+description: "India Trade CLI exposes all capabilities as HTTP skill endpoints via a FastAPI server on port 8765."
+---
+
+India Trade CLI exposes all its capabilities as HTTP skill endpoints via a FastAPI server running on port 8765. Any HTTP client or OpenClaw agent can call these endpoints directly — no Python installation required on the calling side.
+
+## Starting the server
+
+<CodeGroup>
+
+```bash terminal
+uvicorn web.api:app --host 127.0.0.1 --port 8765
+```
+
+```text repl
+trade
+> web
+```
+
+</CodeGroup>
+
+**Base URL:** `http://localhost:8765`
+
+## Request format
+
+All skill endpoints accept `POST` requests with a `Content-Type: application/json` body. The one exception is skill discovery, which uses `GET`.
+
+## Skill discovery
+
+```bash
+GET /.well-known/openclaw.json
+```
+
+Returns a manifest listing all 17 skills with their input schemas and descriptions. An OpenClaw agent fetches this once to learn what skills are available, then calls them by name.
+
+```bash
+curl http://localhost:8765/.well-known/openclaw.json
+```
+
+## Response format
+
+Every skill endpoint returns the same envelope on success:
+
+```json
+{
+  "status": "ok",
+  "data": { ... }
+}
+```
+
+On error:
+
+```json
+{
+  "status": "error",
+  "message": "..."
+}
+```
+
+HTTP status codes follow standard conventions: `200` for success, `404` when a symbol is not found, `400` for bad input, `500` for server errors.
+
+<Warning>
+  The skill server has no built-in authentication. Keep it bound to
+  `127.0.0.1`. Do not expose it on `0.0.0.0` or to the public internet without
+  putting a reverse proxy (nginx, Caddy, Traefik) with authentication in front
+  of it.
+</Warning>
+
+## Available skill endpoints
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| `quote` | `POST /skills/quote` | Live NSE/BSE quote |
+| `options_chain` | `POST /skills/options_chain` | NSE options chain |
+| `flows` | `POST /skills/flows` | FII/DII flow data |
+| `earnings` | `POST /skills/earnings` | Earnings calendar |
+| `macro` | `POST /skills/macro` | Macro indicators |
+| `deals` | `POST /skills/deals` | Bulk/block deals |
+| `morning_brief` | `POST /skills/morning_brief` | Daily market brief |
+| `backtest` | `POST /skills/backtest` | Run backtest |
+| `pairs` | `POST /skills/pairs` | Pairs analysis |
+| `chat` | `POST /skills/chat` | Multi-turn trading chat |
+| `chat/reset` | `POST /skills/chat/reset` | Reset chat session |
+| `analyze` | `POST /skills/analyze` | Full multi-agent analysis |
+| `deep_analyze` | `POST /skills/deep_analyze` | Deep analysis (11 LLM calls) |
+| `alerts/add` | `POST /skills/alerts/add` | Add an alert |
+| `alerts/list` | `POST /skills/alerts/list` | List alerts |
+| `alerts/remove` | `POST /skills/alerts/remove` | Remove an alert |
+| `alerts/check` | `POST /skills/alerts/check` | Check alert status |

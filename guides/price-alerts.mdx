@@ -1,0 +1,122 @@
+---
+title: "Price alerts"
+description: "Set price, technical indicator, and conditional alerts in the REPL. Receive notifications in the terminal, on Telegram, or via webhook."
+---
+
+The alerts engine monitors NSE and BSE symbols in the background and notifies you the moment a condition is met. Alerts persist to `~/.trading_platform/alerts.json` and survive restarts. When a WebSocket connection is active, price alerts fire on every tick rather than on a polling interval.
+
+## Alert types
+
+| Type | Description |
+|---|---|
+| Price | Fires when the last traded price crosses above or below a threshold |
+| Technical | Fires when an indicator — such as RSI — crosses a level |
+| Conditional | Combines price and indicator conditions with AND logic |
+
+<Steps>
+  <Step title="Set a simple price alert">
+    ```text
+    alert RELIANCE above 2800
+    ```
+
+    This alert fires the next time RELIANCE trades at or above ₹2,800. You can also alert on a price falling below a level:
+
+    ```text
+    alert RELIANCE below 2600
+    ```
+  </Step>
+
+  <Step title="Set a technical indicator alert">
+    ```text
+    alert NIFTY RSI above 70
+    ```
+
+    This fires when NIFTY's RSI reaches or exceeds 70 — an overbought reading. To alert when RSI enters oversold territory:
+
+    ```text
+    alert INFY RSI below 30
+    ```
+
+    Supported technical indicators: `RSI`, `MACD`, `ADX`, `ATR`.
+  </Step>
+
+  <Step title="Set a conditional alert">
+    Combine a price condition and a technical condition with `AND`:
+
+    ```text
+    alert RELIANCE above 2800 AND RSI above 70
+    ```
+
+    Both conditions must be true simultaneously for the alert to fire. This is useful for confirming momentum — for example, waiting for a price breakout that is also supported by an overbought RSI signal.
+  </Step>
+
+  <Step title="List active alerts">
+    ```text
+    alerts
+    ```
+
+    This prints a table showing each alert's ID, type, condition description, and creation time. Only alerts that have not yet fired are shown.
+  </Step>
+
+  <Step title="Remove an alert">
+    Copy the alert ID from the `alerts` table and run:
+
+    ```text
+    alert remove <ID>
+    ```
+
+    For example:
+
+    ```text
+    alert remove a3f2c1
+    ```
+  </Step>
+</Steps>
+
+## How alerts fire
+
+When a condition is met, the REPL displays a highlighted panel notification and sounds a system bell. If you are on macOS, a desktop notification also appears.
+
+If a WebSocket connection is active (Fyers broker with real-time data), price alerts evaluate on every tick — typically within a second of the threshold being crossed. Without a WebSocket connection, alerts fall back to polling every 60 seconds.
+
+## Telegram delivery
+
+If you have connected a Telegram bot, alerts are pushed to your phone automatically when they fire — even if the CLI is not open in your terminal.
+
+To set up the Telegram bot, run `telegram setup` from the REPL and follow the guided wizard. See the [Telegram bot](/integrations/telegram-bot) guide for full instructions.
+
+<Tip>
+Combine terminal alerts with Telegram so you receive mobile push notifications when a price level is hit. This way you do not need to keep the CLI open all day to stay informed.
+</Tip>
+
+## Webhook delivery
+
+To receive alert payloads programmatically, register a webhook URL when creating an alert via the HTTP API:
+
+```bash
+curl -X POST http://localhost:8765/skills/alerts/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "symbol": "RELIANCE",
+    "condition": "ABOVE",
+    "threshold": 2800,
+    "webhook_url": "https://your-server.example.com/on-alert"
+  }'
+```
+
+When the alert fires, the server POSTs the following payload to your URL:
+
+```json
+{
+  "event": "alert_triggered",
+  "alert_id": "a3f2c1",
+  "alert_type": "PRICE",
+  "symbol": "RELIANCE",
+  "exchange": "NSE",
+  "description": "RELIANCE price ABOVE ₹2,800.00",
+  "triggered_at": "2026-04-03T11:00:00",
+  "ltp": 2815.5
+}
+```
+
+See the [Alerts API reference](/api/skills/alerts) for the full list of endpoints, including `alerts/list`, `alerts/remove`, and `alerts/check`.

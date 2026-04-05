@@ -1,0 +1,106 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "luma",
+  "name": "India Trade CLI",
+  "favicon": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png",
+  "colors": {
+    "primary": "#94cb04",
+    "light": "#545454"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/hopit-ai/india-trade-cli"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "configuration"
+            ]
+          },
+          {
+            "group": "AI Providers",
+            "pages": [
+              "ai-providers/overview",
+              "ai-providers/gemini",
+              "ai-providers/claude",
+              "ai-providers/openai",
+              "ai-providers/ollama"
+            ]
+          },
+          {
+            "group": "Brokers",
+            "pages": [
+              "brokers/overview",
+              "brokers/fyers",
+              "brokers/demo-mode"
+            ]
+          },
+          {
+            "group": "CLI Commands",
+            "pages": [
+              "commands/analysis",
+              "commands/market-data",
+              "commands/strategy",
+              "commands/backtesting",
+              "commands/alerts",
+              "commands/portfolio",
+              "commands/trade-execution"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/telegram-bot",
+              "integrations/openclaw"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/first-analysis",
+              "guides/build-a-strategy",
+              "guides/paper-trading",
+              "guides/price-alerts"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "HTTP API",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Skills",
+            "pages": [
+              "api/skills/quotes",
+              "api/skills/analysis",
+              "api/skills/alerts",
+              "api/skills/market-data"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+---
+title: "India Trade CLI"
+description: "AI-powered terminal for trading Indian stocks and derivatives on NSE/BSE. Run multi-agent analysis, backtest strategies, get Telegram alerts, and call market data over HTTP."
+---
+
+India Trade CLI is a free, open-source trading terminal for India's equity and derivatives markets. It runs seven AI analyst agents on any NSE or BSE listed stock, forces them into a structured bull-vs-bear debate, and outputs a fund-manager-style synthesis with trade plans across three risk profiles.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="bolt" href="/quickstart">
+    Install, configure an AI provider, and run your first analysis in minutes.
+  </Card>
+  <Card title="CLI Commands" icon="terminal" href="/commands/analysis">
+    Full reference for every command: analysis, strategy, alerts, portfolio, and more.
+  </Card>
+  <Card title="HTTP API" icon="code" href="/api/overview">
+    17 REST skill endpoints for use with OpenClaw agents or any HTTP client.
+  </Card>
+  <Card title="Guides" icon="book-open" href="/guides/first-analysis">
+    Step-by-step walkthroughs for common workflows.
+  </Card>
+</CardGroup>
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Multi-Agent Analysis" icon="brain" href="/commands/analysis">
+    Seven specialist AI analysts debate a stock and produce trade plans for three risk profiles.
+  </Card>
+  <Card title="Strategy Builder" icon="wand-magic-sparkles" href="/commands/strategy">
+    Describe a strategy in plain English — AI interviews you, generates Python code, and backtests it.
+  </Card>
+  <Card title="Telegram Bot" icon="paper-plane" href="/integrations/telegram-bot">
+    Get live quotes, run full AI analysis, and receive price alerts on your phone.
+  </Card>
+  <Card title="OpenClaw Integration" icon="plug" href="/integrations/openclaw">
+    Expose every capability as discoverable HTTP skills for AI agent workflows.
+  </Card>
+</CardGroup>
+
+## Get started in four steps
+
+<Steps>
+  <Step title="Install">
+    Clone the repo and install with pip:
+    ```bash
+    git clone https://github.com/hopit-ai/india-trade-cli.git
+    cd india-trade-cli
+    python -m venv .venv && source .venv/bin/activate
+    pip install -e .
+    ```
+  </Step>
+  <Step title="Set up an AI provider">
+    Choose any supported provider. [Gemini](https://aistudio.google.com) has a free tier — no credit card needed. See [AI Providers](/ai-providers/overview) for all options.
+  </Step>
+  <Step title="Connect a broker (optional)">
+    Run `trade --no-broker` to skip this step and use delayed market data. For real-time NSE/BSE data, connect [Fyers](/brokers/fyers) — it's free.
+  </Step>
+  <Step title="Start the REPL">
+    ```bash
+    trade
+    ```
+    Then run your first analysis:
+    ```
+    > analyze RELIANCE
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  India Trade CLI is for educational and informational purposes only. It is not financial advice. Trading in stocks and derivatives involves substantial risk of loss.
+</Note>

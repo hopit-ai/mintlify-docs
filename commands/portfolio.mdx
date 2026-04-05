@@ -1,0 +1,72 @@
+---
+title: "Portfolio & Account"
+description: "View holdings, positions, orders, and account funds across all connected brokers. Track trade history and AI performance over time."
+---
+
+These commands give you a real-time view of your account and a persistent record of every analysis the AI has produced.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `funds` | Available cash and margin |
+| `holdings` | Long-term delivery holdings |
+| `positions` | Open intraday and F&O positions |
+| `orders` | Today's orders and their status |
+| `portfolio` | Unified view across all connected brokers |
+| `memory` | Recent trade analyses |
+| `memory stats` | Win rate, P&L, and performance statistics |
+| `memory RELIANCE` | Past analyses for a specific symbol |
+| `memory outcome ID WIN 1250` | Record a trade outcome with optional P&L |
+| `profile` | Your personal trading style profile |
+| `drift` | Model drift detection — is the AI losing edge? |
+| `audit <ID>` | Post-mortem analysis of a specific trade |
+
+## Multi-broker portfolio
+
+Use `connect` to add a second broker alongside your primary one. The `portfolio` command then shows a unified view — all holdings, F&O positions, funds, net Greeks, and a risk meter — with each row labelled by broker.
+
+```text
+connect                  # add a second broker
+brokers                  # list all connected brokers with cash summary
+portfolio                # combined view: all brokers + risk meter
+disconnect               # remove a secondary broker
+```
+
+The portfolio view includes:
+- Holdings table (CNC) with per-broker subtotals
+- F&O / intraday positions with Delta and Theta columns
+- Combined funds: available cash, used margin, total balance
+- Net Greeks: Delta, Theta (₹/day), Vega (₹ per 1% IV)
+- Risk meter: LOW / MEDIUM / HIGH / DANGER with capital deployment percentage
+
+## Trade memory
+
+Every `analyze` and `deep-analyze` run is automatically stored in trade memory. This gives you a permanent audit trail and lets the AI learn from your trading history.
+
+```text
+memory                   # show last 10 analyses
+memory 20                # show last 20 analyses
+memory RELIANCE          # all past analyses for RELIANCE
+memory stats             # win rate, average P&L, best/worst trades
+memory outcome T-4a2c WIN 1250   # record outcome: trade ID, WIN/LOSS, P&L
+memory outcome T-4a2c LOSS -800 missed stop-loss  # with notes
+```
+
+Recording outcomes improves the `memory stats` report and feeds the `drift` and `profile` commands.
+
+## Drift detection
+
+`drift` checks whether the AI's recent recommendations have been profitable. If the win rate has dropped significantly from your historical baseline — for example because market conditions have shifted — it flags this as model drift and suggests reviewing the current AI provider or strategy parameters.
+
+## Trading style profile
+
+`profile` builds a picture of your trading style from your memory history: average hold time, preferred instruments, risk tolerance, most common strategy types, and win rate by sector. This is used to personalize trade plan sizing in the analysis pipeline.
+
+## Post-mortem audit
+
+`audit <ID>` runs a structured post-mortem on a completed trade: what the AI recommended, what actually happened, what the analysts got right and wrong, and lessons for future trades.
+
+```text
+audit T-4a2c
+```

@@ -1,0 +1,69 @@
+---
+title: "Strategy Builder"
+description: "Build, backtest, and run quantitative trading strategies by describing them in plain English."
+---
+
+The strategy builder lets you describe a trading idea in plain English. The AI interviews you about parameters, generates Python code, automatically backtests it on NSE history, and saves the strategy for future use.
+
+<Warning>
+The strategy builder executes AI-generated Python code on your machine. Only run strategies from sources you trust. Review any generated code with `strategy show <name>` before running it live, and never copy-paste strategy code from untrusted sources into your strategies folder.
+</Warning>
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `strategy new` | Describe a strategy in plain English — AI interviews you, generates code, backtests |
+| `strategy new --simple` | Same as above but everything explained without jargon |
+| `strategy list` | List all saved strategies with backtest stats |
+| `strategy backtest <name> --period 2y` | Re-backtest a saved strategy over a different period |
+| `strategy run <name> RELIANCE --paper` | Generate the latest signal; paper trade if BUY |
+| `strategy show <name>` | View the generated Python code and metadata |
+| `strategy delete <name>` | Remove a saved strategy |
+
+## Workflow
+
+<Steps>
+  <Step title="Describe your idea">
+    Run `strategy new` and describe what you want in plain English. For example:
+
+    ```text
+    Buy when RSI drops below 30 and price is above the 200-day EMA. Sell when RSI goes above 70.
+    ```
+
+    Use `--simple` if you want the AI to skip the technical terminology.
+  </Step>
+  <Step title="AI interview">
+    The AI asks clarifying questions about parameters — RSI period, EMA length, stop-loss percentage, position sizing. It also provides data-backed recommendations: for example, it may suggest RSI(14) over RSI(7) based on historical performance on NIFTY 50 stocks.
+  </Step>
+  <Step title="Code generation">
+    The AI generates a Python `Strategy` subclass. The code is validated against an import whitelist before it is saved or executed.
+  </Step>
+  <Step title="Automatic backtest">
+    The strategy is immediately backtested on 1 year of NSE history. Results — total return, Sharpe ratio, max drawdown, win rate — are printed before you decide to save.
+  </Step>
+  <Step title="Save and reuse">
+    Strategies are saved to `~/.trading_platform/strategies/` as `.py` + `.json` pairs. Use `strategy list` to see all saved strategies and `strategy run` to generate live signals.
+  </Step>
+</Steps>
+
+## Supported strategy types
+
+The AI has been trained on the following strategy patterns and gives reliable code for them:
+
+| Type | Description |
+|------|-------------|
+| RSI mean reversion | Buy oversold, sell overbought |
+| EMA crossover | Golden cross / death cross signals |
+| MACD | Signal line crossover |
+| Bollinger Bands | Mean reversion at band extremes |
+| Pairs spread | Z-score based long/short on correlated stocks |
+
+## Re-backtesting and running signals
+
+```text
+strategy backtest rsi_mean_reversion --period 2y
+strategy run rsi_mean_reversion RELIANCE --paper
+```
+
+`--paper` automatically places a simulated paper trade if the strategy emits a BUY signal. Use `memory stats` to review paper trading performance over time.

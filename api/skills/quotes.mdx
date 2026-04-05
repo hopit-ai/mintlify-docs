@@ -1,0 +1,172 @@
+---
+title: "Quotes & Options"
+description: "Live price quotes and options chain data for NSE/BSE symbols."
+---
+
+## POST /skills/quote
+
+Get a live price quote for any NSE or BSE listed symbol. Returns last traded price, OHLCV, and change percentage.
+
+When a broker (Fyers) is connected, quotes come from the real-time WebSocket feed. Without a broker, the server falls back to yfinance (~15 min delayed).
+
+### Request body
+
+```json
+{ "symbol": "RELIANCE" }
+```
+
+<ParamField body="symbol" type="string" required>
+  NSE/BSE symbol (e.g., `RELIANCE`, `TCS`, `NIFTY`). You can also pass a fully
+  qualified instrument string such as `NSE:RELIANCE`.
+</ParamField>
+
+<ParamField body="exchange" type="string" default="NSE">
+  Exchange: `NSE` or `BSE`. Defaults to `NSE`.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/quote \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "RELIANCE"}'
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/quote",
+    json={"symbol": "RELIANCE"},
+)
+print(resp.json())
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "symbol": "NSE:RELIANCE",
+    "last_price": 2847.35,
+    "open": 2820.00,
+    "high": 2861.50,
+    "low": 2815.20,
+    "close": 2831.10,
+    "volume": 4823100,
+    "change": 16.25,
+    "change_pct": 0.57,
+    "timestamp": "2026-04-04T10:32:15"
+  }
+}
+```
+
+<ResponseField name="last_price" type="number">
+  Last traded price in INR.
+</ResponseField>
+
+<ResponseField name="change" type="number">
+  Absolute price change from previous close.
+</ResponseField>
+
+<ResponseField name="change_pct" type="number">
+  Percentage change from previous close.
+</ResponseField>
+
+<ResponseField name="volume" type="number">
+  Traded volume for the session so far.
+</ResponseField>
+
+---
+
+## POST /skills/options_chain
+
+Get the full NSE options chain for an index or stock — all strikes and all expiries. Requires a broker connection (Fyers) for live data.
+
+### Request body
+
+```json
+{ "symbol": "NIFTY" }
+```
+
+<ParamField body="symbol" type="string" required>
+  Index or stock symbol (e.g., `NIFTY`, `BANKNIFTY`, `RELIANCE`).
+</ParamField>
+
+<ParamField body="exchange" type="string" default="NSE">
+  Exchange. Defaults to `NSE`.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/options_chain \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "NIFTY"}'
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/options_chain",
+    json={"symbol": "NIFTY"},
+)
+print(resp.json())
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": [
+    {
+      "symbol": "NIFTY",
+      "expiry": "2026-04-24",
+      "strike": 22000,
+      "option_type": "CE",
+      "last_price": 185.40,
+      "iv": 14.2,
+      "oi": 2340500,
+      "volume": 891200,
+      "delta": 0.52,
+      "gamma": 0.0018,
+      "theta": -12.3,
+      "vega": 28.7
+    },
+    {
+      "symbol": "NIFTY",
+      "expiry": "2026-04-24",
+      "strike": 22000,
+      "option_type": "PE",
+      "last_price": 172.10,
+      "iv": 15.1,
+      "oi": 1987300,
+      "volume": 743600,
+      "delta": -0.48,
+      "gamma": 0.0018,
+      "theta": -11.8,
+      "vega": 27.9
+    }
+  ]
+}
+```
+
+Each object in the array represents one option contract.
+
+<ResponseField name="strike" type="number">Strike price.</ResponseField>
+<ResponseField name="option_type" type="string">`CE` (call) or `PE` (put).</ResponseField>
+<ResponseField name="iv" type="number">Implied volatility as a percentage.</ResponseField>
+<ResponseField name="oi" type="number">Open interest (number of outstanding contracts).</ResponseField>
+<ResponseField name="delta" type="number">Rate of change of option price with respect to underlying price.</ResponseField>
+<ResponseField name="theta" type="number">Daily time decay in INR.</ResponseField>

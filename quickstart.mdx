@@ -1,0 +1,109 @@
+---
+title: "Quick Start"
+description: "Install India Trade CLI, connect an AI provider, and run your first stock analysis in a few minutes."
+---
+
+<Note>
+  The first time you run `trade`, it starts an interactive setup wizard that asks for your broker, AI provider, and optional NewsAPI key. You only need to do this once — credentials are saved to your OS keychain.
+</Note>
+
+<Steps>
+  <Step title="Install">
+    Clone the repository and install the package into a virtual environment:
+
+    ```bash
+    git clone https://github.com/hopit-ai/india-trade-cli.git
+    cd india-trade-cli
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+    On Windows, activate the virtual environment with:
+
+    ```bat
+    .venv\Scripts\activate
+    ```
+
+    Then install the package in editable mode:
+
+    ```bash
+    pip install -e .
+    ```
+  </Step>
+
+  <Step title="Choose an AI provider">
+    India Trade CLI works with several AI providers. Pick the one that suits you — Gemini is the easiest way to get started for free.
+
+    | Provider | Cost | What you need |
+    |---|---|---|
+    | **Gemini** | Free tier available | API key from [aistudio.google.com](https://aistudio.google.com) |
+    | **Claude (Pro/Max subscription)** | Included with subscription | Run `npm i -g @anthropic-ai/claude-code` then `claude login` — no API key needed |
+    | **Claude API** | Pay per token | API key from [console.anthropic.com](https://console.anthropic.com) |
+    | **OpenAI API** | Pay per token | API key from [platform.openai.com](https://platform.openai.com) |
+
+    You can also use OpenRouter, Groq, Ollama (local), or any OpenAI-compatible endpoint. See [AI Providers](/ai-providers/overview) for the full list.
+
+    The setup wizard will ask which provider you want during the first run. You can switch at any time with the `provider` command inside the REPL.
+  </Step>
+
+  <Step title="Connect a broker">
+    A broker connection gives you real-time NSE and BSE quotes via WebSocket. **Fyers** is the recommended free option — it provides a free API with real-time data and a straightforward OAuth setup.
+
+    <Tip>
+      You can skip the broker step entirely by running `trade --no-broker`. This uses yfinance for ~15-minute delayed data and lets you try analysis, strategy building, and most commands immediately without creating any accounts.
+    </Tip>
+
+    To set up Fyers:
+
+    1. Create a free account at [fyers.in](https://fyers.in) if you don't have one.
+    2. Go to [myapi.fyers.in](https://myapi.fyers.in), log in, and click **Create App**.
+    3. Set the **Redirect URL** to exactly `http://127.0.0.1:8765/fyers/callback` and the **App Type** to `Personal`.
+    4. Copy your **App ID** (format: `XXXX-100`) and **Secret Key**.
+    5. Run `trade`, select **Fyers** when prompted, and paste the App ID and Secret Key.
+    6. A browser window opens for OAuth login. After you log in, the terminal completes automatically — no copy-pasting needed.
+
+    See [Brokers: Fyers](/brokers/fyers) for detailed instructions.
+  </Step>
+
+  <Step title="First run">
+    Start the REPL:
+
+    ```bash
+    trade
+    ```
+
+    After the setup wizard completes (or if you've already configured credentials), you'll see the India Trade CLI prompt. Run your first analysis:
+
+    ```text
+    > analyze RELIANCE
+    ```
+
+    This runs 7 analyst agents in parallel, a bull-vs-bear debate across 5 LLM calls, and a fund manager synthesis — then outputs trade plans for aggressive, neutral, and conservative risk profiles.
+  </Step>
+
+  <Step title="Try more commands">
+    Here are a few more commands to explore once you're in the REPL:
+
+    <CodeGroup>
+
+    ```text Deep analysis (11 LLM calls)
+    > deep-analyze INFY
+    ```
+
+    ```text Daily market overview
+    > morning-brief
+    ```
+
+    ```text Live quote
+    > quote TCS
+    ```
+
+    ```text Today's bulk and block deals
+    > deals
+    ```
+
+    </CodeGroup>
+
+    `deep-analyze` runs every analyst in full LLM mode (11 AI calls total) for a more thorough result. `morning-brief` gives you a daily NSE/BSE market context with an AI narrative. `deals` shows bulk and block deal activity for the day.
+  </Step>
+</Steps>

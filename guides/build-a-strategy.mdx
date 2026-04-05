@@ -1,0 +1,163 @@
+---
+title: "Build a strategy"
+description: "Use the AI-powered strategy builder to describe a trading strategy in plain English, generate Python code, backtest it, and save it for recurring use."
+---
+
+The strategy builder lets you describe a trading idea in plain English. The AI interviews you about parameters, generates Python code, runs a backtest on NSE historical data, and saves the strategy for later use.
+
+<Warning>
+The strategy builder executes AI-generated Python code on your machine. Always review the generated code with `strategy show <name>` before running it on strategies from untrusted sources. Never copy-paste strategy code from outside sources into `~/.trading_platform/strategies/`.
+</Warning>
+
+## Supported strategy types
+
+| Type | Description |
+|---|---|
+| RSI | Mean reversion — buy when RSI drops below 30, sell when it rises above 70 |
+| EMA crossover | Trend following — buy when the fast EMA crosses above the slow EMA, sell on cross below |
+| MACD | Momentum — buy when the MACD histogram turns positive, sell when it turns negative |
+| Bollinger Bands | Mean reversion — buy at the lower band, sell at the upper band |
+| Pairs z-score spread | Statistical arbitrage — long one stock, short another when their spread is stretched beyond a z-score threshold |
+
+<Steps>
+  <Step title="Start the strategy builder">
+    Open the REPL and run:
+
+    ```text
+    strategy new
+    ```
+
+    The AI introduces itself and asks you to describe your strategy. If you prefer explanations without financial jargon, use:
+
+    ```text
+    strategy new --simple
+    ```
+  </Step>
+
+  <Step title="Describe your strategy">
+    Type a plain-English description. For example:
+
+    ```text
+    RSI mean reversion — buy when RSI drops below 30, sell when it goes above 70
+    ```
+
+    Or a more specific description:
+
+    ```text
+    EMA crossover on a 20-day and 50-day basis for HDFCBANK
+    ```
+
+    The AI searches for similar existing strategies and built-in templates. If it finds a close match, it asks whether you want to start from that or build something new.
+  </Step>
+
+  <Step title="Answer the AI's parameter questions">
+    The AI interviews you to confirm or refine the key parameters. For an RSI strategy, it might ask:
+
+    - What RSI period do you want to use? (default: 14)
+    - What is your oversold threshold for buying? (default: 30)
+    - What is your overbought threshold for selling? (default: 70)
+    - Which symbol do you primarily want to test on?
+    - What backtest period — 1 year, 2 years?
+
+    You can accept the defaults, provide your own values, or ask the AI why it recommends a particular setting. The AI gives data-backed reasoning for each parameter choice.
+  </Step>
+
+  <Step title="AI generates Python code and runs a backtest">
+    Once you confirm the parameters, the AI generates Python code and runs a safety check before executing it. It then immediately backtests the strategy on real NSE historical data.
+
+    The generated code will look similar to:
+
+    ```python
+    from engine.backtest import Strategy
+    import pandas as pd
+    from analysis.technical import rsi
+
+    class RSIMeanReversion(Strategy):
+        name = "RSI Mean Reversion (30/70)"
+
+        def __init__(self, period=14, buy_level=30, sell_level=70):
+            self.period = period
+            self.buy_level = buy_level
+            self.sell_level = sell_level
+
+        def generate_signals(self, df: pd.DataFrame) -> pd.Series:
+            rsi_values = rsi(df["close"], self.period)
+            signals = pd.Series(0, index=df.index)
+            signals[rsi_values < self.buy_level] = 1
+            signals[rsi_values > self.sell_level] = -1
+            return signals
+    ```
+  </Step>
+
+  <Step title="Review the backtest results">
+    The backtest summary shows:
+
+    | Metric | What it means |
+    |---|---|
+    | Total Return | Strategy return over the test period |
+    | CAGR | Compound annual growth rate |
+    | Buy & Hold | What simply holding the stock returned |
+    | Alpha | Your strategy return minus buy-and-hold |
+    | Sharpe Ratio | Risk-adjusted return (higher is better) |
+    | Max Drawdown | Largest peak-to-trough loss |
+    | Win Rate | Percentage of trades that were profitable |
+    | Avg Win / Avg Loss | Average size of winning vs. losing trades |
+    | Profit Factor | Gross profit divided by gross loss |
+    | Avg Hold | Average days a position was held |
+
+    A positive alpha means your strategy outperformed simply buying and holding the stock over the same period.
+  </Step>
+
+  <Step title="Save the strategy">
+    If you're happy with the results, confirm when the AI asks whether to save. The strategy is stored in:
+
+    ```text
+    ~/.trading_platform/strategies/<name>.py
+    ~/.trading_platform/strategies/<name>.json
+    ```
+
+    The `.json` file contains the strategy name, description, parameters, and the last backtest results. The `.py` file contains the generated Python code.
+  </Step>
+
+  <Step title="List your saved strategies">
+    ```text
+    strategy list
+    ```
+
+    This shows a table of all saved strategies with their last backtest return, Sharpe ratio, win rate, and creation date.
+  </Step>
+
+  <Step title="View the generated code">
+    To inspect the Python code for any saved strategy:
+
+    ```text
+    strategy show <name>
+    ```
+
+    The code is displayed with syntax highlighting. Review it before running it on live or paper trades.
+  </Step>
+
+  <Step title="Re-run a backtest with a different period">
+    You can retest any saved strategy over a different historical window without rebuilding it:
+
+    ```text
+    strategy backtest <name> --period 2y
+    ```
+
+    Supported period values: `1mo`, `3mo`, `6mo`, `1y`, `2y`, `3y`, `5y`.
+  </Step>
+
+  <Step title="Run a live signal">
+    To generate the latest buy/sell signal for a symbol using your saved strategy and optionally execute a paper trade if the signal is BUY:
+
+    ```text
+    strategy run <name> RELIANCE --paper
+    ```
+
+    The `--paper` flag sends any triggered trade to the paper trading engine rather than your live broker. Omit it only when you are ready for real execution.
+  </Step>
+</Steps>
+
+<Tip>
+Use `strategy new --simple` if you're new to quantitative trading. The AI explains each parameter — like RSI period or EMA window — in plain language before asking you to choose a value.
+</Tip>

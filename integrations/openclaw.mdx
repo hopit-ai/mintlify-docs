@@ -1,0 +1,170 @@
+---
+title: "OpenClaw"
+description: "Expose every India Trade CLI capability as discoverable HTTP skills. Any OpenClaw agent can call market data, run AI analysis, and manage alerts without installing the CLI."
+---
+
+OpenClaw is a standard for discoverable HTTP skills. You publish a manifest at `/.well-known/openclaw.json` that describes every capability your server provides — input schemas, paths, and expected outputs. Any OpenClaw-compatible agent can read that manifest and start calling your skills immediately, without any custom integration code.
+
+India Trade CLI ships a skill server built on FastAPI. Start it and your agent can fetch live quotes, run multi-agent AI analysis, check FII/DII flows, backtest strategies, manage alerts with webhooks, and hold multi-turn conversations with the trading agent — all over standard HTTP.
+
+## Architecture
+
+```text
+OpenClaw Agent
+    │  GET /.well-known/openclaw.json   ← discover available skills
+    │  POST /skills/analyze             ← call a skill
+    ▼
+india-trade-cli Skill Server (FastAPI, port 8765)
+```
+
+The skill server exposes the same capabilities you use from the REPL. Calling `/skills/analyze` runs the same 7-analyst pipeline as `analyze RELIANCE` in the terminal.
+
+## Start the skill server
+
+<CodeGroup>
+
+```bash Direct
+uvicorn web.api:app --host 127.0.0.1 --port 8765
+```
+
+```text From the REPL
+> web
+```
+
+</CodeGroup>
+
+<Warning>
+  The skill server has no authentication. Keep it bound to `127.0.0.1`. If you need network access, put it behind a reverse proxy that handles authentication.
+</Warning>
+
+## Discover available skills
+
+```bash
+curl http://localhost:8765/.well-known/openclaw.json
+```
+
+The response is the full manifest: all 17 skills, their input schemas, output descriptions, and the base URL. Your agent reads this once to know which skills are available and what each one expects.
+
+## Available skills
+
+| Skill | Endpoint | Example input | Speed |
+|-------|----------|---------------|-------|
+| `quote` | `POST /skills/quote` | `{ "symbol": "RELIANCE" }` | Instant |
+| `options_chain` | `POST /skills/options_chain` | `{ "symbol": "NIFTY" }` | Instant |
+| `flows` | `POST /skills/flows` | `{}` | Instant |
+| `earnings` | `POST /skills/earnings` | `{ "symbols": ["TCS"] }` | Instant |
+| `macro` | `POST /skills/macro` | `{}` | Instant |
+| `deals` | `POST /skills/deals` | `{ "symbol": "INFY" }` | Instant |
+| `morning_brief` | `POST /skills/morning_brief` | `{}` | ~2s |
+| `backtest` | `POST /skills/backtest` | `{ "symbol": "INFY", "strategy": "rsi" }` | ~5s |
+| `pairs` | `POST /skills/pairs` | `{ "stock_a": "HDFCBANK", "stock_b": "ICICIBANK" }` | ~5s |
+| `chat` | `POST /skills/chat` | `{ "message": "Analyse RELIANCE", "session_id": "abc" }` | ~5s |
+| `chat/reset` | `POST /skills/chat/reset` | `{ "session_id": "abc" }` | Instant |
+| `analyze` | `POST /skills/analyze` | `{ "symbol": "RELIANCE" }` | 30–90s |
+| `deep_analyze` | `POST /skills/deep_analyze` | `{ "symbol": "RELIANCE" }` | 3–8 min |
+| `alerts/add` | `POST /skills/alerts/add` | `{ "symbol": "RELIANCE", "condition": "ABOVE", "threshold": 2800 }` | Instant |
+| `alerts/list` | `POST /skills/alerts/list` | `{}` | Instant |
+| `alerts/remove` | `POST /skills/alerts/remove` | `{ "alert_id": "abc12345" }` | Instant |
+| `alerts/check` | `POST /skills/alerts/check` | `{}` | ~2s |
+
+## Example calls
+
+### Get a live quote
+
+```bash
+curl -X POST http://localhost:8765/skills/quote \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "RELIANCE"}'
+```
+
+### Run full multi-agent analysis
+
+```bash
+curl -X POST http://localhost:8765/skills/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "RELIANCE"}'
+```
+
+This runs the 7-analyst pipeline — Technical, Fundamental, Options, News/Macro, Sentiment, Sector Rotation, and Risk — followed by a bull/bear debate and fund manager synthesis. Expect 30–90 seconds.
+
+### Chat with the trading agent
+
+```bash
+curl -X POST http://localhost:8765/skills/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is the RSI on NIFTY?", "session_id": "my-agent"}'
+```
+
+The agent has access to all market tools and calls them autonomously. Pass the same `session_id` across requests to maintain conversation context. Use `/skills/chat/reset` to start a new conversation.
+
+## Webhook alerts
+
+Register a `webhook_url` when creating an alert. The skill server POSTs to that URL the moment the alert fires — no polling needed.
+
+```bash
+curl -X POST http://localhost:8765/skills/alerts/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "symbol": "RELIANCE",
+    "condition": "ABOVE",
+    "threshold": 2800,
+    "webhook_url": "https://my-agent.example.com/on-alert"
+  }'
+```
+
+When the alert triggers, your endpoint receives:
+
+```json
+{
+  "event": "alert_triggered",
+  "alert_id": "abc12345",
+  "symbol": "RELIANCE",
+  "description": "RELIANCE price ABOVE ₹2,800.00",
+  "triggered_at": "2026-04-03T11:00:00",
+  "ltp": 2815.5
+}
+```
+
+Alerts persist across server restarts (saved to `~/.trading_platform/alerts.json`). If you prefer polling instead of webhooks, use `/skills/alerts/check` to evaluate all active alerts on demand.
+
+## Response format
+
+Every endpoint returns the same envelope on success:
+
+```json
+{
+  "status": "ok",
+  "data": { ... }
+}
+```
+
+For example, a successful `/skills/quote` response looks like:
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "symbol": "RELIANCE",
+    "exchange": "NSE",
+    "last_price": 2815.5,
+    "open": 2800.0,
+    "high": 2820.0,
+    "low": 2795.0,
+    "close": 2810.0,
+    "volume": 4823100,
+    "change": 5.5,
+    "change_pct": 0.20
+  }
+}
+```
+
+On error, the server returns a non-200 status with:
+
+```json
+{
+  "status": "error",
+  "message": "description of what went wrong"
+}
+```
+
+For the full API reference including all request and response schemas, see [API overview](/api/overview).

@@ -1,0 +1,352 @@
+---
+title: "Analysis"
+description: "Multi-agent stock analysis, deep analysis, and multi-turn trading chat."
+---
+
+## POST /skills/analyze
+
+Runs the full multi-agent analysis pipeline on a symbol. Seven analyst agents run in parallel (Technical, Fundamental, Options, News/Macro, Sentiment, Sector Rotation, Risk Manager), followed by a multi-round bull-vs-bear debate, and a Fund Manager synthesis that outputs a final verdict with three trade plans.
+
+**8 LLM calls total. Expect 30–90 seconds.**
+
+### Request body
+
+```json
+{ "symbol": "RELIANCE" }
+```
+
+<ParamField body="symbol" type="string" required>
+  NSE/BSE symbol to analyze (e.g., `RELIANCE`, `TCS`, `INFY`).
+</ParamField>
+
+<ParamField body="exchange" type="string" default="NSE">
+  Exchange: `NSE` or `BSE`. Defaults to `NSE`.
+</ParamField>
+
+<Note>
+  This call takes 30–90 seconds depending on your AI provider and network
+  latency. Call it asynchronously and poll for the result, or use a long HTTP
+  timeout.
+</Note>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "RELIANCE"}'
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/analyze",
+    json={"symbol": "RELIANCE"},
+    timeout=120,
+)
+print(resp.json()["data"]["report"])
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "symbol": "RELIANCE",
+    "exchange": "NSE",
+    "report": "## RELIANCE Analysis\n\n**Verdict: BUY** (Confidence: 72%)\n\n...",
+    "trade_plans": {
+      "aggressive": {
+        "action": "BUY",
+        "entry": 2847.00,
+        "stop_loss": 2780.00,
+        "target_1": 2950.00,
+        "target_2": 3050.00,
+        "position_size_pct": 4.0,
+        "risk_reward": 2.5
+      },
+      "neutral": {
+        "action": "BUY",
+        "entry": 2847.00,
+        "stop_loss": 2760.00,
+        "target_1": 2920.00,
+        "target_2": 3000.00,
+        "position_size_pct": 2.5,
+        "risk_reward": 2.1
+      },
+      "conservative": {
+        "action": "BUY",
+        "entry": 2847.00,
+        "stop_loss": 2740.00,
+        "target_1": 2900.00,
+        "target_2": 2960.00,
+        "position_size_pct": 1.5,
+        "risk_reward": 1.8
+      }
+    }
+  }
+}
+```
+
+<ResponseField name="report" type="string">
+  Full analysis report as a Markdown string. Includes each analyst's summary,
+  debate highlights, and the Fund Manager's synthesis.
+</ResponseField>
+
+<ResponseField name="trade_plans" type="object">
+  <Expandable title="properties">
+    <ResponseField name="aggressive" type="object">
+      Trade plan for a higher-risk profile: tighter stop, larger position.
+    </ResponseField>
+    <ResponseField name="neutral" type="object">
+      Trade plan for a balanced risk profile.
+    </ResponseField>
+    <ResponseField name="conservative" type="object">
+      Trade plan for a lower-risk profile: wider stop, smaller position.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+Each trade plan contains `action`, `entry`, `stop_loss`, `target_1`, `target_2`, `position_size_pct`, and `risk_reward`.
+
+---
+
+## POST /skills/deep_analyze
+
+Deep analysis mode where every analyst uses an AI model rather than rule-based Python. More thorough than `/skills/analyze` but significantly slower.
+
+**11 LLM calls total. Expect 3–8 minutes.**
+
+### Request body
+
+```json
+{ "symbol": "RELIANCE" }
+```
+
+<ParamField body="symbol" type="string" required>
+  NSE/BSE symbol to analyze.
+</ParamField>
+
+<ParamField body="exchange" type="string" default="NSE">
+  Exchange: `NSE` or `BSE`. Defaults to `NSE`.
+</ParamField>
+
+<Warning>
+  This call takes 3–8 minutes. Set your HTTP client timeout accordingly, or
+  run it in a background job.
+</Warning>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/deep_analyze \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "RELIANCE"}' \
+  --max-time 600
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/deep_analyze",
+    json={"symbol": "RELIANCE"},
+    timeout=600,
+)
+print(resp.json()["data"]["report"])
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "symbol": "RELIANCE",
+    "exchange": "NSE",
+    "report": "## RELIANCE Deep Analysis\n\n**Verdict: BUY** (Confidence: 78%)\n\n..."
+  }
+}
+```
+
+The `report` field contains the full deep analysis as a Markdown string. Unlike `/analyze`, the deep analysis report includes AI-generated commentary from every analyst, not just the debate and synthesis layers.
+
+---
+
+## POST /skills/chat
+
+Multi-turn conversational interface with the trading agent. The agent has access to all market tools (quotes, technicals, fundamentals, options chain, FII/DII flows, news, portfolio) and calls them autonomously in response to your messages.
+
+Sessions are maintained in memory, keyed by `session_id`. Reuse the same `session_id` to keep conversation context across calls. Sessions are lost when the server restarts.
+
+### Request body
+
+```json
+{ "message": "What is the RSI on NIFTY?", "session_id": "my-agent" }
+```
+
+<ParamField body="message" type="string" required>
+  Your message or question for the trading agent.
+</ParamField>
+
+<ParamField body="session_id" type="string" required>
+  Unique session identifier. Use the same value across calls to preserve
+  conversation context. Use a new value (or call `/skills/chat/reset`) to start
+  a fresh session.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is the RSI on NIFTY?", "session_id": "my-agent"}'
+```
+
+```python python
+import requests
+
+SESSION = "my-agent"
+base = "http://localhost:8765/skills/chat"
+
+# First turn
+r1 = requests.post(base, json={"message": "Analyse RELIANCE", "session_id": SESSION})
+print(r1.json()["data"]["response"])
+
+# Follow-up — context is preserved
+r2 = requests.post(base, json={"message": "What does the options chain say?", "session_id": SESSION})
+print(r2.json()["data"]["response"])
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "session_id": "my-agent",
+    "response": "NIFTY's RSI (14) is currently at 58.3, which is in neutral territory...",
+    "history_length": 3
+  }
+}
+```
+
+<ResponseField name="response" type="string">The agent's reply.</ResponseField>
+<ResponseField name="session_id" type="string">The session ID echoed back.</ResponseField>
+<ResponseField name="history_length" type="number">Number of messages in the session so far (user + agent turns combined).</ResponseField>
+
+---
+
+## POST /skills/chat/reset
+
+Clear the conversation history for a session. The next message sent with the same `session_id` will start a fresh conversation.
+
+### Request body
+
+```json
+{ "session_id": "my-agent" }
+```
+
+<ParamField body="session_id" type="string" default="default">
+  Session to reset. Defaults to `"default"`.
+</ParamField>
+
+### Example
+
+```bash
+curl -X POST http://localhost:8765/skills/chat/reset \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "my-agent"}'
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": { "session_id": "my-agent", "cleared": true }
+}
+```
+
+---
+
+## POST /skills/morning_brief
+
+Get a structured daily market overview: NIFTY/BANKNIFTY snapshot, FII/DII institutional flows, top news headlines, market breadth (advance/decline), and upcoming events for the next 7 days.
+
+This endpoint makes no LLM calls — it returns pure data from market modules. Response is typically fast (~2 seconds).
+
+### Request body
+
+```json
+{}
+```
+
+No input fields required.
+
+### Example
+
+```bash
+curl -X POST http://localhost:8765/skills/morning_brief \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "market_snapshot": {
+      "nifty50": { "last_price": 22415.30, "change_pct": 0.42 },
+      "banknifty": { "last_price": 48230.15, "change_pct": 0.18 },
+      "india_vix": { "last_price": 13.85, "change_pct": -2.1 }
+    },
+    "institutional_flows": {
+      "fii_buy": 4823.5,
+      "fii_sell": 3910.2,
+      "fii_net": 913.3,
+      "dii_buy": 3105.8,
+      "dii_sell": 2780.4,
+      "dii_net": 325.4,
+      "signal": "BULLISH",
+      "streak": 3
+    },
+    "top_news": [
+      {
+        "headline": "RBI keeps repo rate unchanged at 6.5%",
+        "source": "Economic Times",
+        "published_at": "2026-04-04T08:30:00"
+      }
+    ],
+    "market_breadth": {
+      "advances": 1423,
+      "declines": 612,
+      "unchanged": 89,
+      "advance_decline_ratio": 2.32
+    },
+    "upcoming_events": [
+      {
+        "event": "TCS Q4 results",
+        "date": "2026-04-10",
+        "type": "earnings"
+      }
+    ]
+  }
+}
+```

@@ -1,0 +1,85 @@
+---
+title: "Trade Execution"
+description: "Execute the AI's trade plans in paper or live mode, and export analysis output to PDF."
+---
+
+After running `analyze`, the AI produces three trade plans — Aggressive, Neutral, and Conservative. Use `execute` to act on one of them. The mode (paper or live) is determined by your `TRADING_MODE` environment variable.
+
+<Warning>
+`execute` places real orders with your broker when `TRADING_MODE=LIVE`. Always verify your environment configuration before running. Start with paper trading (`TRADING_MODE=PAPER`) until you are confident in the AI's recommendations and your risk settings.
+</Warning>
+
+## Execute commands
+
+| Command | Description |
+|---------|-------------|
+| `execute` | Execute the last trade plan using the neutral risk profile |
+| `execute aggressive` | Execute the aggressive plan |
+| `execute conservative` | Execute the conservative plan |
+
+You must run `analyze <SYMBOL>` first. If no trade plans are available, `execute` will tell you to run an analysis first.
+
+## Paper vs live mode
+
+Set `TRADING_MODE` in your `.env` file or via `configuration`:
+
+```bash
+TRADING_MODE=PAPER    # simulated fills, no real money (default)
+TRADING_MODE=LIVE     # real orders sent to your broker
+```
+
+You can check the current mode at any time:
+
+```text
+paper
+```
+
+The REPL prompt does not change between modes — always confirm `TRADING_MODE` before executing.
+
+## Risk profiles
+
+Each `analyze` run produces three trade plans simultaneously. The plans share the same direction (BUY/SELL) but differ in sizing and risk parameters:
+
+| Profile | Position size | Stop-loss | Best for |
+|---------|--------------|-----------|---------|
+| `aggressive` | Larger | Wider | High-conviction setups, experienced traders |
+| `neutral` | Default | Standard | Most situations — the recommended default |
+| `conservative` | Smaller | Tighter | Low-conviction or high-VIX environments |
+
+The Risk Manager analyst's VIX reading influences all three plans. When India VIX is above 20, position sizes are reduced automatically.
+
+## Paper trading engine
+
+In `PAPER` mode, the execution engine simulates fills at the last traded price, tracks open simulated positions, and records P&L. Review your paper trading performance with:
+
+```text
+memory stats
+memory RELIANCE
+```
+
+## Output and export commands
+
+Use these to save or explain any previous command output:
+
+| Command | Description |
+|---------|-------------|
+| `save-pdf` | Save the previous output as a PDF |
+| `explain` | Explain the previous output in plain English |
+| `explain-save` | Explain the previous output and save as PDF in one shot |
+| `--pdf` | Flag: append to any command to auto-save as PDF |
+| `--explain` | Flag: append to any command to add a plain-English explanation |
+
+```text
+analyze RELIANCE --pdf
+analyze RELIANCE --explain
+backtest TCS rsi --pdf
+morning-brief --explain
+```
+
+PDFs are saved to `~/.trading_platform/exports/`. Use `exports` to list, open, or clear them:
+
+```text
+exports
+exports open reliance_analysis_2025-04-04.pdf
+exports clear --older-than 30d
+```

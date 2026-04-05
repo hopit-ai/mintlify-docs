@@ -1,0 +1,343 @@
+---
+title: "Market Data API"
+description: "FII/DII flows, earnings calendar, macro indicators, bulk/block deals, backtesting, and pairs analysis."
+---
+
+## POST /skills/flows
+
+Get FII (Foreign Institutional Investor) and DII (Domestic Institutional Investor) flow data with buy/sell signals. Useful for understanding institutional sentiment and direction.
+
+### Request body
+
+```json
+{}
+```
+
+No input fields required.
+
+### Example
+
+```bash
+curl -X POST http://localhost:8765/skills/flows \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "fii_buy": 6452.3,
+    "fii_sell": 5231.8,
+    "fii_net": 1220.5,
+    "dii_buy": 4123.6,
+    "dii_sell": 3890.2,
+    "dii_net": 233.4,
+    "signal": "BULLISH",
+    "streak": 4,
+    "interpretation": "FII net buyers for 4 consecutive sessions. Positive momentum."
+  }
+}
+```
+
+`signal` is `BULLISH`, `BEARISH`, or `NEUTRAL`. `streak` is the number of consecutive sessions the signal has held.
+
+---
+
+## POST /skills/earnings
+
+Upcoming quarterly earnings calendar for NSE stocks. Defaults to the NIFTY 50 universe. Pass a list of symbols to filter to specific stocks.
+
+### Request body
+
+```json
+{ "symbols": ["TCS", "INFY"] }
+```
+
+<ParamField body="symbols" type="array">
+  List of NSE symbols to filter (e.g., `["TCS", "INFY"]`). Optional — omit to
+  get the full NIFTY 50 earnings calendar.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/earnings \
+  -H "Content-Type: application/json" \
+  -d '{"symbols": ["TCS", "INFY"]}'
+```
+
+```bash curl (all NIFTY 50)
+curl -X POST http://localhost:8765/skills/earnings \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": [
+    {
+      "symbol": "TCS",
+      "company": "Tata Consultancy Services",
+      "expected_date": "2026-04-10",
+      "quarter": "Q4FY26",
+      "estimate_eps": 29.8,
+      "previous_eps": 28.1
+    },
+    {
+      "symbol": "INFY",
+      "company": "Infosys",
+      "expected_date": "2026-04-14",
+      "quarter": "Q4FY26",
+      "estimate_eps": 17.2,
+      "previous_eps": 16.9
+    }
+  ]
+}
+```
+
+---
+
+## POST /skills/macro
+
+Macro indicators snapshot: USD/INR exchange rate, Brent crude oil price, gold price (MCX), and US 10-year treasury yield. Each value includes its percentage change from the previous session.
+
+### Request body
+
+```json
+{}
+```
+
+No input fields required.
+
+### Example
+
+```bash
+curl -X POST http://localhost:8765/skills/macro \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "usd_inr": { "value": 83.42, "change_pct": 0.12 },
+    "crude_oil": { "value": 74.85, "change_pct": -0.83, "unit": "USD/bbl" },
+    "gold": { "value": 71340.0, "change_pct": 0.31, "unit": "INR/10g" },
+    "us_10y": { "value": 4.28, "change_pct": 0.02, "unit": "%" }
+  }
+}
+```
+
+---
+
+## POST /skills/deals
+
+Bulk and block deals reported to NSE — large institutional trades that can signal significant interest in a stock. Defaults to the last 5 days.
+
+### Request body
+
+```json
+{ "symbol": "INFY" }
+```
+
+<ParamField body="symbol" type="string">
+  Filter by NSE symbol (e.g., `INFY`). Optional — omit to get all deals across
+  all symbols.
+</ParamField>
+
+<ParamField body="days" type="integer" default="5">
+  Number of trading days to look back. Defaults to `5`.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl (filtered by symbol)
+curl -X POST http://localhost:8765/skills/deals \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "INFY"}'
+```
+
+```bash curl (all deals, last 5 days)
+curl -X POST http://localhost:8765/skills/deals \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": [
+    {
+      "symbol": "INFY",
+      "client": "Vanguard Emerging Markets Fund",
+      "quantity": 1500000,
+      "price": 1542.30,
+      "deal_type": "BLOCK",
+      "entity_type": "FII",
+      "date": "2026-04-03"
+    }
+  ]
+}
+```
+
+`deal_type` is `BULK` or `BLOCK`. `entity_type` is `FII`, `DII`, or `OTHER`.
+
+---
+
+## POST /skills/backtest
+
+Backtest a trading strategy on historical NSE data. Returns performance metrics including total return, Sharpe ratio, max drawdown, and win rate.
+
+### Request body
+
+```json
+{ "symbol": "INFY", "strategy": "rsi" }
+```
+
+<ParamField body="symbol" type="string" required>
+  NSE/BSE symbol (e.g., `INFY`, `RELIANCE`).
+</ParamField>
+
+<ParamField body="strategy" type="string" required>
+  Strategy to backtest. Supported values:
+
+  - `rsi` — RSI overbought/oversold mean reversion
+  - `ma` — moving average crossover
+  - `ema` — exponential moving average crossover
+  - `macd` — MACD signal crossover
+  - `bb` — Bollinger Bands mean reversion
+</ParamField>
+
+<ParamField body="period" type="string" default="1y">
+  Historical data period: `6mo`, `1y`, `2y`, or `5y`. Defaults to `1y`.
+</ParamField>
+
+<ParamField body="exchange" type="string" default="NSE">
+  Exchange. Defaults to `NSE`.
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/backtest \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "INFY", "strategy": "rsi", "period": "2y"}'
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/backtest",
+    json={"symbol": "INFY", "strategy": "rsi", "period": "2y"},
+)
+result = resp.json()["data"]
+print(f"Total return: {result['total_return']}%")
+print(f"Sharpe: {result['sharpe_ratio']}")
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "symbol": "INFY",
+    "strategy": "rsi",
+    "period": "2y",
+    "total_return": 18.4,
+    "sharpe_ratio": 1.32,
+    "max_drawdown": -12.7,
+    "win_rate": 58.3,
+    "total_trades": 24,
+    "avg_trade_return": 0.77,
+    "benchmark_return": 14.2
+  }
+}
+```
+
+`total_return` and `max_drawdown` are percentages. `benchmark_return` is the buy-and-hold return for the same period.
+
+---
+
+## POST /skills/pairs
+
+Pair trading analysis between two stocks. Returns correlation, spread z-score, half-life of mean reversion, and a trading signal.
+
+### Request body
+
+```json
+{ "stock_a": "HDFCBANK", "stock_b": "ICICIBANK" }
+```
+
+<ParamField body="stock_a" type="string" required>
+  First stock symbol (e.g., `HDFCBANK`).
+</ParamField>
+
+<ParamField body="stock_b" type="string" required>
+  Second stock symbol (e.g., `ICICIBANK`).
+</ParamField>
+
+### Example
+
+<CodeGroup>
+
+```bash curl
+curl -X POST http://localhost:8765/skills/pairs \
+  -H "Content-Type: application/json" \
+  -d '{"stock_a": "HDFCBANK", "stock_b": "ICICIBANK"}'
+```
+
+```python python
+import requests
+
+resp = requests.post(
+    "http://localhost:8765/skills/pairs",
+    json={"stock_a": "HDFCBANK", "stock_b": "ICICIBANK"},
+)
+print(resp.json()["data"])
+```
+
+</CodeGroup>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "data": {
+    "stock_a": "HDFCBANK",
+    "stock_b": "ICICIBANK",
+    "correlation": 0.87,
+    "spread_zscore": -2.14,
+    "half_life_days": 8.3,
+    "signal": "LONG_A",
+    "interpretation": "Spread is 2.1 standard deviations below mean. Consider buying HDFCBANK and selling ICICIBANK."
+  }
+}
+```
+
+`signal` is `LONG_A` (buy A, sell B), `LONG_B` (buy B, sell A), or `NEUTRAL` (spread within normal range). `spread_zscore` below -2 or above +2 typically indicates a mean reversion opportunity. `half_life_days` estimates how quickly the spread tends to revert to its mean.

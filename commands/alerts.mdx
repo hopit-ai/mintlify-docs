@@ -1,0 +1,65 @@
+---
+title: "Alerts"
+description: "Set price and technical indicator alerts that fire in the terminal, Telegram, or a webhook URL."
+---
+
+Alerts run as a background daemon in the REPL. When a condition is met, the alert fires in your terminal immediately if a WebSocket connection is live, or within 60 seconds on the polling fallback. You can also route alerts to Telegram or a webhook URL.
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `alert RELIANCE above 2800` | Simple price alert |
+| `alert NIFTY RSI above 70` | Technical indicator alert |
+| `alert RELIANCE above 2800 AND RSI above 70` | Conditional alert — both conditions must be met |
+| `alerts` | List all active alerts |
+| `alert remove <ID>` | Remove an alert by its ID |
+
+## Alert types
+
+### Price alerts
+
+```text
+alert RELIANCE above 2800
+alert NIFTY below 22000
+alert BANKNIFTY above 48500
+```
+
+### Technical alerts
+
+Supported indicators: `RSI`, `MACD`, `ADX`, `ATR`.
+
+```text
+alert INFY RSI above 70
+alert HDFCBANK RSI below 30
+alert TCS MACD above 0
+```
+
+### Conditional alerts
+
+Use `AND` to combine a price condition with a technical condition. Both must be true simultaneously for the alert to fire.
+
+```text
+alert RELIANCE above 2800 AND RSI above 70
+alert NIFTY below 22000 AND RSI below 35
+```
+
+## Viewing and managing alerts
+
+```text
+alerts                   # list all active alerts with IDs
+alert remove AL-3f9a     # remove alert by ID
+```
+
+The REPL status bar shows a live alert count. When an alert fires, it prints a highlighted notification to the terminal.
+
+## Delivery channels
+
+By default, alerts appear in the REPL. You can also route them to:
+
+- **Telegram** — see [Telegram Bot](/integrations/telegram-bot) to set up mobile push notifications
+- **Webhook URLs** — see [Alert Skills](/api/skills/alerts) to configure webhook delivery for automation
+
+<Tip>
+Connect the Telegram bot and set a price alert before a known catalyst — earnings, RBI policy, SEBI announcements — so you get a push notification the moment the level is hit, even if you're away from your terminal. Run `telegram setup` for step-by-step configuration.
+</Tip>
